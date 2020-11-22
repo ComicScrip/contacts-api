@@ -21,6 +21,8 @@ This `.env` file allows to change the way the Node server connects to the databa
 
 Install Docker and docker-compose on your OS.
 
+## Run the app
+
 ```sh
 docker-compose up
 ```
@@ -28,12 +30,7 @@ That will install and run the app with all its dependencies (including the DB) i
 
 You will also have two running DB servers (one for developpement and one for running automated tests), accessible respectively on `localhost:3307` and `localhost:3308` with the user `root` and the password `root`.
 
-If you want to manually run migrations you can do it with :
-```sh 
-docker exec backend npm run migrate-db
-```
-
-### I want to run the automated tests
+### Run the automated tests
 ```sh
 npm run test:setup-and-run
 ```
@@ -49,7 +46,7 @@ Install MySQL on your OS and create two databases on your MySQL instance :
 - customer_api_database
 - customer_api_database_test
 
-Then, change the `DB_*` variables in `.env` file to match your MySQL DB settings
+Then, change the `DB_*` variables in `.env` file to match your own MySQL DB settings
 
 ### Run the app
 
@@ -65,8 +62,12 @@ npm run test:migrate-db
 npm run test
 ```
 
-# Applying sharable changes to the database
+# Database migrations
 
+If, while developping, you must change the structure of the database to fit new requirements, 
+you HAVE TO write a database migration script in order for the changes to be propagated 
+in contributor local databases but also in the pre-prod/prod environments' DBs.
+Here's a helper command : 
 ```
 NAME=splitNameOnCustomers npm run create-db-migration
 ```
@@ -81,6 +82,14 @@ To rollback the last migration :
 ```
 npm run rollback-last-db-migration
 ```
+
+## Applying changes to local databases using Docker
+
+If you want to manually run migrations while running the app with docker, you can do :
+```sh 
+docker exec server npm run migrate-db
+```
+
 # API Docs
 You can access the docs, available by default at [localhost:5000/api-docs](http://localhost:5000/api-docs).
 
