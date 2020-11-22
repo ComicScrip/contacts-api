@@ -41,7 +41,7 @@ Once you've exectued the previous command, you can just do :
 ```sh
 npm run test
 ```
-It will just execute the tests without settting up the DB and running the migrations
+It will just execute the tests without settting up the DB and running the migrations.
 
 ## Without Docker
 
@@ -49,7 +49,7 @@ Install MySQL on your OS and create two databases on your MySQL instance :
 - customer_api_database
 - customer_api_database_test
 
-Then, change variables in .env file to match your MySQL DB settings
+Then, change the `DB_*` variables in `.env` file to match your MySQL DB settings
 
 ### Run the app
 
