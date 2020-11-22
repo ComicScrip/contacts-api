@@ -8,8 +8,16 @@ describe('customers endpoints', () => {
       let res;
       beforeEach(async () => {
         await Promise.all([
-          Customer.create({ first_name: 'John', last_name: 'Doe', email: 'john.doe@gmail.com' }),
-          Customer.create({ first_name: 'Jane', last_name: 'Doe', email: 'jane.doe@gmail.com' })
+          Customer.create({
+            first_name: 'John',
+            last_name: 'Doe',
+            email: 'john.doe@gmail.com',
+          }),
+          Customer.create({
+            first_name: 'Jane',
+            last_name: 'Doe',
+            email: 'jane.doe@gmail.com',
+          }),
         ]);
         res = await request(app).get('/customers');
       });
@@ -32,7 +40,7 @@ describe('customers endpoints', () => {
         res = await request(app).post('/customers').send({
           first_name: 'John',
           last_name: 'Doe',
-          email: 'john.doe@gmail.com'
+          email: 'john.doe@gmail.com',
         });
       });
 
@@ -51,12 +59,12 @@ describe('customers endpoints', () => {
         Customer.create({
           first_name: 'John',
           last_name: 'Doe',
-          email: 'john.doe@gmail.com'
+          email: 'john.doe@gmail.com',
         });
         res = await request(app).post('/customers').send({
           first_name: 'Jane',
           last_name: 'Doe',
-          email: 'john.doe@gmail.com'
+          email: 'john.doe@gmail.com',
         });
       });
 
