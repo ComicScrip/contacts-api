@@ -1,9 +1,3 @@
-# Before cloning the repo
-```sh
-git config --global core.autocrlf input
-```
-(just re-clone if you already cloned the repo before executing this command).
-
 # Setup
 
 Install dependencies and the migration tool :
