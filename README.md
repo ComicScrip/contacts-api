@@ -21,7 +21,7 @@ This `.env` file allows to change the way the Node server connects to the databa
 
 Install Docker and docker-compose on your OS.
 
-## Run the app
+### Run the app
 
 ```sh
 docker-compose up
@@ -67,7 +67,8 @@ npm run test
 If, while developping, you must change the structure of the database to fit new requirements, 
 you HAVE TO write a database migration script in order for the changes to be propagated 
 in contributor local databases but also in the pre-prod/prod environments' DBs.
-Here's a helper command : 
+
+Here's an exemple of the helper command usage : 
 ```
 NAME=splitNameOnCustomers npm run create-db-migration
 ```
@@ -83,7 +84,7 @@ To rollback the last migration :
 npm run rollback-last-db-migration
 ```
 
-## Applying changes to local databases using Docker
+## Applying migrations to local databases using Docker
 
 If you want to manually run migrations while running the app with docker, you can do :
 ```sh 
