@@ -106,3 +106,5 @@ dist
 .idea
 .vscode
 .DS_Store
+
+file-storage/
