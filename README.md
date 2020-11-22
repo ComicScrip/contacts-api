@@ -89,3 +89,9 @@ docker exec server npm run migrate-db
 You can access the docs, available by default at [localhost:5000/api-docs](http://localhost:5000/api-docs).
 
 You can modify the docs by changing the `docs/swagger.yaml` file.
+
+# Deployment
+
+See  : 
+- [(FR) Guide : How to host this application with CapRover on a Linux machine](DEPLOYMENT_GUIDE_FR.md)
+

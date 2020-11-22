@@ -4,7 +4,9 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 
 const PORT =
-  process.env.PORT || (process.env.NODE_ENV === 'test' ? 5001 : 5000);
+  process.env.NODE_ENV === 'test'
+    ? process.env.SERVER_PORT_TEST || 5001
+    : process.env.SERVER_PORT || 5000;
 
 const app = express();
 
