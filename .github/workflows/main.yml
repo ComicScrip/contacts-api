@@ -9,7 +9,7 @@ jobs:
       matrix:
         node-version: [12.x]
     steps:
-      - uses: mirromutth/mysql-action@v1.1
+      - uses: haltuf/mysql-action@master
         with:
           character set server: 'utf8' # Optional, default value is 'utf8mb4'. The '--character-set-server' option for mysqld
           collation server: 'utf8_general_ci' # Optional, default value is 'utf8mb4_general_ci'. The '--collation-server' option for mysqld
