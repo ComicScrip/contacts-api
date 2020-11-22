@@ -2,7 +2,7 @@
 ```sh
 git config --global core.autocrlf input
 ```
-(just re-clone if already cloned).
+(just re-clone if you already cloned the repo before executing this command).
 
 # Setup
 
@@ -19,12 +19,12 @@ This `.env` file allows to change the way the Node server connects to the databa
 
 ## With Docker (recommanded)
 
-Install Docker on your OS.
+Install Docker and docker-compose on your OS.
 
 ```sh
 docker-compose up -d
 ```
-That will install and run the app with all its dependencies (including the DB) in isolated containers. With this single command, you will have a fully functionnal API listening by default on [localhost:5000](http://localhost:5000). 
+That will install and run the app with all its dependencies (including the DB) in isolated containers. With this single command, you will have a fully functionnal and persistant API listening by default on [localhost:5000](http://localhost:5000). 
 
 You will also have two running DB servers (one for developpement and one for running automated tests), accessible respectively on `localhost:3307` and `localhost:3308` with the user `root` and the password `root`.
 
@@ -45,8 +45,11 @@ It will just execute the tests without settting up the DB and running the migrat
 
 ## Without Docker
 
-Install MySQL (5.7) on your OS. 
-Then, change variables in .env file to match your MySQL DB settings (you'll have to manually create the dev and tess databases in your MySQL instance).
+Install MySQL on your OS and create two databases on your MySQL instance :
+- customer_api_database
+- customer_api_database_test
+
+Then, change variables in .env file to match your MySQL DB settings
 
 ### Run the app
 
