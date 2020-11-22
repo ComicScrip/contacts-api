@@ -16,7 +16,7 @@
     "test:migrate-db": "db-migrate up -e test",
     "wait-for-db": "node ./scripts/wait10s.js",
     "test:setup-and-run": "npm-run-all test:setup-db wait-for-db test:migrate-db test",
-    "lint": "eslint --fix"
+    "lint": "eslint --fix ."
   },
   "husky": {
     "hooks": {

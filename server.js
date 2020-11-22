@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
 
 const PORT =
   process.env.PORT || (process.env.NODE_ENV === 'test' ? 5001 : 5000);
@@ -7,8 +9,6 @@ const PORT =
 const app = express();
 
 if (process.env.NODE_ENV !== 'production') {
-  const swaggerUi = require('swagger-ui-express');
-  const YAML = require('yamljs');
   const swaggerDocument = YAML.load('./docs/swagger.yaml');
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
@@ -32,17 +32,17 @@ app.use(express.json());
 app.use(cors());
 
 app.use('/customers', require('./routes/customer.routes.js'));
+
 app.use('/', (req, res) => {
   res.redirect('/customers');
 });
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   if (err.name === 'UnauthorizedError') {
     res.status(401).send('invalid token...');
   }
 });
-app.use((error, req, res, next) => {
-  console.log(toto);
+app.use((error, req, res) => {
   console.error(error.stack);
   res.status(500).send('Something Broke!');
 });

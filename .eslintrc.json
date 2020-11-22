@@ -15,7 +15,9 @@
     "plugins": [
         "jest"
     ],
+    "ignorePatterns": ["migrations/**"],
     "rules": {
-        "no-console": "off"
+        "no-console": "off",
+        "camelcase": "off"
     }
 }

@@ -2,7 +2,7 @@ require('dotenv').config();
 const mysql = require('mysql');
 
 class Database {
-  init () {
+  init() {
     if (process.env.NODE_ENV === 'test') {
       this.connection = mysql.createConnection({
         host: process.env.DB_HOST_TEST || 'localhost',
@@ -10,7 +10,7 @@ class Database {
         user: process.env.DB_USER_TEST || 'root',
         password: process.env.DB_PASS_TEST || 'root',
         database: process.env.DB_NAME_TEST || 'customer_api_database_test',
-        multipleStatements: true
+        multipleStatements: true,
       });
     } else {
       this.connection = mysql.createPool({
@@ -19,14 +19,15 @@ class Database {
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASS || 'root',
         database: process.env.DB_NAME || 'customer_api_database',
-        connectionLimit: 10
+        connectionLimit: 10,
+        multipleStatements: true,
       });
     }
 
     return this;
   }
 
-  async query (...args) {
+  async query(...args) {
     return new Promise((resolve, reject) => {
       this.connection.query(...args, (err, res) => {
         if (err) reject(err);
@@ -35,35 +36,40 @@ class Database {
     });
   }
 
-  async closeConnection () {
+  async closeConnection() {
     return new Promise((resolve, reject) => {
       if (this.connection) {
-        this.connection.end((err, res) => {
+        this.connection.end((err) => {
           if (err) reject(err);
           else resolve();
         });
       } else {
-        return resolve();
+        resolve();
       }
     });
   }
 
-  async deleteAllData () {
-    if (process.env.NODE_ENV !== 'test') throw new Error('Cannot truncate all table if not in test env !');
-    const truncates = await this.getTableNames().then(rows => rows.map(row => `TRUNCATE ${row.table_name};`).join(' '));
+  async deleteAllData() {
+    if (process.env.NODE_ENV !== 'test')
+      throw new Error('Cannot truncate all table if not in test env !');
+    const truncates = await this.getTableNames().then((rows) =>
+      rows.map((row) => `TRUNCATE ${row.table_name};`).join(' ')
+    );
     const sql = `SET FOREIGN_KEY_CHECKS=0; ${truncates} SET FOREIGN_KEY_CHECKS=1;`;
     return this.query(sql);
   }
 
-  async getTableNames () {
-    if (!this._tableNames) {
-      this._tableNames = await this.query(`
+  async getTableNames() {
+    if (!this.tableNames) {
+      this.tableNames = await this.query(`
           SELECT table_name
-          FROM INFORMATION_SCHEMA.TABLES where table_schema = '${process.env.DB_NAME_TEST || 'customer_api_database_test'}' and table_name != 'migrations'
+          FROM INFORMATION_SCHEMA.TABLES where table_schema = '${
+            process.env.DB_NAME_TEST || 'customer_api_database_test'
+          }' and table_name != 'migrations'
       `);
     }
-    return this._tableNames;
+    return this.tableNames;
   }
 }
 
-module.exports = (new Database()).init();
+module.exports = new Database().init();

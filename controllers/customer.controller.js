@@ -59,7 +59,7 @@ module.exports.findOne = async (req, res) => {
         .send({ errorMessage: `Customer with id ${req.params.id} not found.` });
     } else {
       res.status(500).send({
-        errorMessage: 'Error retrieving Customer with id ' + req.params.id,
+        errorMessage: `Error retrieving Customer with id ${  req.params.id}`,
       });
     }
   }
@@ -86,7 +86,7 @@ module.exports.update = async (req, res) => {
         .send({ errorMessage: `Customer with id ${req.params.id} not found.` });
     } else {
       res.status(500).send({
-        errorMessage: 'Error updating Customer with id ' + req.params.id,
+        errorMessage: `Error updating Customer with id ${  req.params.id}`,
       });
     }
   }
@@ -103,7 +103,7 @@ module.exports.delete = async (req, res) => {
       });
     } else {
       res.status(500).send({
-        message: 'Could not delete Customer with id ' + req.params.id,
+        message: `Could not delete Customer with id ${  req.params.id}`,
       });
     }
   }

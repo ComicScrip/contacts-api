@@ -1,4 +1,4 @@
-'use strict';
+
 let dbm; // eslint-disable-line
 
 /**
