@@ -65,18 +65,23 @@ npm run test:migrate-db
 npm run test
 ```
 
-# Changing the database structure with a migration
+# Applying sharable changes to the database
 
 ```
 NAME=splitNameOnCustomers npm run create-db-migration
 ```
-(Replace the NAME variable value by the name of your change)
-Then you can run :
+(Replace the NAME variable value by the name of your change). It will create two SQL files in the `migrations/sqls` folder. One file is executed on the DB when applying changes (migrating up) and the other is run when rolling back changes (migrating down).
+
+To apply the changes that have not yet been synced to the database :
 ```
 npm run migrate-db
 ```
 
-# Docs
+To rollback the last migration : 
+```
+npm run rollback-last-db-migration
+```
+# API Docs
 You can access the docs, available by default at [localhost:5000/api-docs](http://localhost:5000/api-docs).
 
 You can modify the docs by changing the `docs/swagger.yaml` file.
