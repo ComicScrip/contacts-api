@@ -50,7 +50,7 @@ module.exports.findAll = async (req, res) => {
 module.exports.findOne = async (req, res) => {
   try {
     const data = await Customer.findById(req.params.id);
-    res.send({ data });
+    res.send(data);
   } catch (err) {
     if (err.kind === 'not_found') {
       res
@@ -77,7 +77,7 @@ module.exports.update = async (req, res) => {
       last_name,
       email,
     });
-    res.send({ data });
+    res.send(data);
   } catch (err) {
     if (err.kind === 'not_found') {
       res
@@ -98,7 +98,7 @@ module.exports.delete = async (req, res) => {
   } catch (err) {
     if (err.kind === 'not_found') {
       res.status(404).send({
-        message: `Not found Customer with id ${req.params.id}.`,
+        errorMessage: `Customer with id ${req.params.id} not found.`,
       });
     } else {
       res.status(500).send({
