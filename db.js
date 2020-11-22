@@ -52,8 +52,8 @@ class Database {
   async deleteAllData() {
     if (process.env.NODE_ENV !== 'test')
       throw new Error('Cannot truncate all table if not in test env !');
-    const truncates = await this.getTableNames().then((rows) =>
-      rows.map((row) => `TRUNCATE ${row.table_name};`).join(' ')
+    const truncates = await this.getTableNames().then((tableNames) =>
+      tableNames.map((name) => `TRUNCATE ${name};`).join(' ')
     );
     const sql = `SET FOREIGN_KEY_CHECKS=0; ${truncates} SET FOREIGN_KEY_CHECKS=1;`;
     return this.query(sql);
@@ -61,12 +61,13 @@ class Database {
 
   async getTableNames() {
     if (!this.tableNames) {
-      this.tableNames = await this.query(`
-          SELECT table_name
-          FROM INFORMATION_SCHEMA.TABLES where table_schema = '${
+      this.tableNames = (
+        await this.query(
+          `SELECT table_name FROM information_schema.tables where LOWER(table_schema) = '${
             process.env.DB_NAME_TEST || 'customer_api_database_test'
-          }' and table_name != 'migrations'
-      `);
+          }' AND table_name != 'migrations'`
+        )
+      ).map((row) => row.table_name || row.TABLE_NAME);
     }
     return this.tableNames;
   }

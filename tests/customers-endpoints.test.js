@@ -27,8 +27,8 @@ describe('customers endpoints', () => {
       });
 
       it('the returned data is an array containing two elements', async () => {
-        expect(Array.isArray(res.body.data));
-        expect(res.body.data.length).toBe(2);
+        expect(Array.isArray(res.body));
+        expect(res.body.length).toBe(2);
       });
     });
   });
@@ -49,7 +49,7 @@ describe('customers endpoints', () => {
       });
 
       it('returns the id of the created customer', async () => {
-        expect(res.body.data).toHaveProperty('id');
+        expect(res.body).toHaveProperty('id');
       });
     });
 

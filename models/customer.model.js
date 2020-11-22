@@ -1,18 +1,22 @@
+const omitBy = require('lodash/omitBy');
 const db = require('../db.js');
 
 module.exports.getFullName = (customer) => {
   return `${customer.first_name} ${customer.last_name}`;
 };
 
-module.exports.create = async (newCustomerAttributes) => {
-  return db
-    .query('INSERT INTO customers SET ?', newCustomerAttributes)
-    .then((res) => {
-      return { ...newCustomerAttributes, id: res.insertId };
-    });
+module.exports.create = async (newAttributes) => {
+  const attributes = omitBy(
+    newAttributes,
+    (item) => typeof item === 'undefined'
+  );
+
+  return db.query('INSERT INTO customers SET ?', attributes).then((res) => {
+    return { ...attributes, id: res.insertId };
+  });
 };
 
-module.exports.findById = async (id) => {
+const findById = async (id) => {
   const rows = await db.query(`SELECT * FROM customers WHERE id = ${id}`);
   if (rows.length) {
     return Promise.resolve(rows[0]);
@@ -21,6 +25,7 @@ module.exports.findById = async (id) => {
   err.kind = 'not_found';
   return Promise.reject(err);
 };
+module.exports.findById = findById;
 
 module.exports.emailAlreadyExists = async (email) => {
   const rows = await db.query('SELECT * FROM customers WHERE email = ?', [
@@ -36,13 +41,14 @@ module.exports.getAll = async () => {
   return db.query('SELECT id, first_name, last_name, email FROM customers');
 };
 
-module.exports.updateById = async (id, { email, first_name, last_name }) => {
+module.exports.updateById = async (id, newAttributes) => {
+  console.log(newAttributes);
   return db
-    .query(
-      'UPDATE customers SET email = ?, first_name = ?, last_name = ? WHERE id = ?',
-      [email, first_name, last_name, id]
-    )
-    .then(() => this.findById(id));
+    .query('UPDATE customers SET ? WHERE id = ?', [
+      omitBy(newAttributes, (item) => typeof item === 'undefined'),
+      id,
+    ])
+    .then(() => findById(id));
 };
 
 module.exports.remove = async (id) => {
