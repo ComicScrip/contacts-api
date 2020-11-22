@@ -106,7 +106,7 @@ Si l'API doit servir des fichiers uploadés par les utilisateurs sur le système
 
   - Caprover > Apps > One-click Apps/Databases > Filebrowser
   - app name : filebrowser
-  - deploy
+  - Deploy
   - Enable https, cocher "Force HTTPS by redirecting all HTTP traffic to HTTPS", cliquer sur "Save & Update"
   - Onglet App configs
   - Dans la section Persistent Directories, mettre à jour le label coresspondant au "path in app" /srv ("filebrowser-files"). La nouvelle valeur doit être "file-storage".
