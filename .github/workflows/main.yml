@@ -2,12 +2,12 @@ name: Integration tests MySQL
 on:
   pull_request:
     branches: [master, dev]
-jobs: 
-  test: 
+jobs:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [12.x]
+        node-version: [14.x]
     steps:
       - uses: mirromutth/mysql-action@v1.1
         with:
@@ -24,14 +24,14 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm i -g db-migrate db-migrate-mysql
-      - run: DB_HOST=localhost DB_PORT=3306 DB_USER=tester DB_PASS=WildWildPass DB_NAME=customer_api_database_test db-migrate up
+      - run: DB_HOST=localhost DB_PORT=3306 DB_USER=root DB_PASS=WildWildPass DB_NAME=customer_api_database_test db-migrate up
       - run: npm test
         env:
           CI: true
           PORT: 3001
           DB_DIALECT: mysql
           DB_HOST_TEST: localhost
-          DB_USER_TEST: tester
+          DB_USER_TEST: root
           DB_PASS_TEST: WildWildPass
           DB_NAME_TEST: customer_api_database_test
           DB_PORT_TEST: 3306
