@@ -23,7 +23,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm i -g db-migrate db-migrate-mysql
-      - run: DB_HOST=localhost DB_PORT=3306 DB_USER=root DB_PASS=WildWildPass DB_NAME=customer_api_database_test db-migrate up
+      - run: DB_HOST=localhost DB_PORT=3306 DB_USER=root DB_PASS=WildWildPass DB_NAME=customer_api_database_test db-migrate up -e test
       - run: npm test
         env:
           CI: true
