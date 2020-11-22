@@ -23,12 +23,9 @@ paths:
         '200':
           description: 'Everything went well'
           schema:
-            type: 'object'
-            properties:
-              data:
-                type: 'array'
-                items:
-                  $ref: '#/definitions/CustomerSimplified'
+            type: 'array'
+            items:
+              $ref: '#/definitions/CustomerSimplified'
     post:
       tags:
         - 'customer'
@@ -50,9 +47,8 @@ paths:
           description: 'Created'
           schema:
             type: 'object'
-            properties:
-              data:
-                $ref: '#/definitions/Customer'
+            $ref: '#/definitions/Customer'
+
         '400':
           description: 'Invalid input. The customer object provided is not valid'
           schema:
@@ -79,10 +75,8 @@ paths:
           description: 'successful operation'
           schema:
             type: 'object'
-            properties:
-              data:
-                type: 'object'
-                $ref: '#/definitions/Customer'
+            $ref: '#/definitions/Customer'
+
         '404':
           description: 'customer not found'
     put:
@@ -108,9 +102,7 @@ paths:
           description: 'Updated'
           schema:
             type: 'object'
-            properties:
-              data:
-                $ref: '#/definitions/Customer'
+            $ref: '#/definitions/Customer'
         '404':
           description: 'customer not found'
         '400':

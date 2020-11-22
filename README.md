@@ -22,7 +22,7 @@ This `.env` file allows to change the way the Node server connects to the databa
 Install Docker and docker-compose on your OS.
 
 ```sh
-docker-compose up -d
+docker-compose up
 ```
 That will install and run the app with all its dependencies (including the DB) in isolated containers. With this single command, you will have a fully functionnal and persistant API listening by default on [localhost:5000](http://localhost:5000). 
 
@@ -65,5 +65,18 @@ npm run test:migrate-db
 npm run test
 ```
 
+# Changing the database structure with a migration
+
+```
+NAME=splitNameOnCustomers npm run create-db-migration
+```
+(Replace the NAME variable value by the name of your change)
+Then you can run :
+```
+npm run migrate-db
+```
+
 # Docs
-You can access the docs at [localhost:5000/api-docs](http://localhost:5000/api-docs)
+You can access the docs, available by default at [localhost:5000/api-docs](http://localhost:5000/api-docs).
+
+You can modify the docs by changing the `docs/swagger.yaml` file.

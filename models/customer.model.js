@@ -1,6 +1,6 @@
 const db = require('../db.js');
 
-module.exports.getfullName = (customer) => {
+module.exports.getFullName = (customer) => {
   return `${customer.first_name} ${customer.last_name}`;
 };
 

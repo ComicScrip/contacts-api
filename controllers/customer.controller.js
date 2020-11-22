@@ -20,7 +20,7 @@ module.exports.create = async (req, res) => {
         .send({ errorMessage: 'A customer with this email already exists !' });
     }
     const data = await Customer.create({ first_name, last_name, email });
-    return res.status(201).send({ data });
+    return res.status(201).send(data);
   } catch (err) {
     return res.status(500).send({
       errorMessage:
@@ -32,14 +32,13 @@ module.exports.create = async (req, res) => {
 module.exports.findAll = async (req, res) => {
   try {
     const rawData = await Customer.getAll();
-    res.send({
-      data: rawData.map((c) => ({
+    res.send(
+      rawData.map((c) => ({
         id: c.id,
-        name: Customer.getfullName(c),
+        name: Customer.getFullName(c),
         email: c.email,
-        active: !!c.active,
-      })),
-    });
+      }))
+    );
   } catch (err) {
     res.status(500).send({
       errorMessage:
@@ -59,7 +58,7 @@ module.exports.findOne = async (req, res) => {
         .send({ errorMessage: `Customer with id ${req.params.id} not found.` });
     } else {
       res.status(500).send({
-        errorMessage: `Error retrieving Customer with id ${  req.params.id}`,
+        errorMessage: `Error retrieving Customer with id ${req.params.id}`,
       });
     }
   }
@@ -86,7 +85,7 @@ module.exports.update = async (req, res) => {
         .send({ errorMessage: `Customer with id ${req.params.id} not found.` });
     } else {
       res.status(500).send({
-        errorMessage: `Error updating Customer with id ${  req.params.id}`,
+        errorMessage: `Error updating Customer with id ${req.params.id}`,
       });
     }
   }
@@ -103,7 +102,7 @@ module.exports.delete = async (req, res) => {
       });
     } else {
       res.status(500).send({
-        message: `Could not delete Customer with id ${  req.params.id}`,
+        message: `Could not delete Customer with id ${req.params.id}`,
       });
     }
   }
