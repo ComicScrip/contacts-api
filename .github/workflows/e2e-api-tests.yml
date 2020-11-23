@@ -1,4 +1,4 @@
-name: Integration tests MySQL
+name: Integration tests
 on:
   pull_request:
     branches: [main, dev]

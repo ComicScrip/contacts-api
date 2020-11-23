@@ -1,4 +1,4 @@
-name: Code style checker
+name: Code style check
 
 on:
   pull_request:
@@ -25,5 +25,5 @@ jobs:
       - name: npm install
         run: npm i
 
-      - name: Run ESLint
+      - name: Run the project's linter
         run: npm run lint

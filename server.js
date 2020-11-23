@@ -17,7 +17,6 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 process.on('unhandledRejection', (error) => {
-  console.log(toto);
   console.error('unhandledRejection', JSON.stringify(error), error.stack);
   process.exit(1);
 });
