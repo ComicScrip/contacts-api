@@ -34,10 +34,10 @@ process.on('beforeExit', () => {
 app.use(express.json());
 app.use(cors());
 
-app.use('/customers', require('./routes/customer.routes.js'));
+app.use('/contacts', require('./routes/contact.routes.js'));
 
 app.use('/', (req, res) => {
-  res.redirect('/customers');
+  res.redirect('/contacts');
 });
 
 app.use((err, req, res) => {

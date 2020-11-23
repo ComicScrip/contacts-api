@@ -1,27 +1,27 @@
 const request = require('supertest');
 const app = require('../server.js');
-const Customer = require('../models/customer.model.js');
+const Contact = require('../models/contact.model.js');
 
-const validCustomer = {
+const validContact = {
   first_name: 'John',
   last_name: 'Doe',
   email: 'john.doe@gmail.com',
 };
 
-describe('customers endpoints', () => {
-  describe('GET /customers', () => {
-    describe('when there are two customers in DB', () => {
+describe('contacts endpoints', () => {
+  describe('GET /contacts', () => {
+    describe('when there are two contacts in DB', () => {
       let res;
       beforeEach(async () => {
         await Promise.all([
-          Customer.create(validCustomer),
-          Customer.create({
+          Contact.create(validContact),
+          Contact.create({
             first_name: 'Jane',
             last_name: 'Doe',
             email: 'jane.doe@gmail.com',
           }),
         ]);
-        res = await request(app).get('/customers');
+        res = await request(app).get('/contacts');
       });
 
       it('status is 200', async () => {
@@ -35,13 +35,13 @@ describe('customers endpoints', () => {
     });
   });
 
-  describe('GET /customers/:id', () => {
-    describe('with existing customer id', () => {
+  describe('GET /contacts/:id', () => {
+    describe('with existing contact id', () => {
       let res;
-      let customer;
+      let contact;
       beforeAll(async () => {
-        customer = await Customer.create(validCustomer);
-        res = await request(app).get(`/customers/${customer.id}`);
+        contact = await Contact.create(validContact);
+        res = await request(app).get(`/contacts/${contact.id}`);
       });
 
       it('returns 200', () => {
@@ -49,16 +49,16 @@ describe('customers endpoints', () => {
       });
 
       it('returned object in body has correct properties', () => {
-        expect(res.body).toEqual(customer);
+        expect(res.body).toEqual(contact);
       });
     });
   });
 
-  describe('POST /customers', () => {
+  describe('POST /contacts', () => {
     describe('whithout apiKey', () => {
       let res;
       beforeAll(async () => {
-        res = await request(app).post('/customers').send(validCustomer);
+        res = await request(app).post('/contacts').send(validContact);
       });
 
       it('returns 401 status', async () => {
@@ -70,25 +70,25 @@ describe('customers endpoints', () => {
       let res;
       beforeAll(async () => {
         res = await request(app)
-          .post(`/customers?apiKey=${process.env.API_KEY}`)
-          .send(validCustomer);
+          .post(`/contacts?apiKey=${process.env.API_KEY}`)
+          .send(validContact);
       });
 
       it('returns 201 status', async () => {
         expect(res.statusCode).toEqual(201);
       });
 
-      it('returns the id of the created customer', async () => {
+      it('returns the id of the created contact', async () => {
         expect(res.body).toHaveProperty('id');
       });
     });
 
-    describe('when a customer with the same email already exists in DB', () => {
+    describe('when a contact with the same email already exists in DB', () => {
       let res;
       beforeAll(async () => {
-        Customer.create(validCustomer);
+        Contact.create(validContact);
         res = await request(app)
-          .post(`/customers?apiKey=${process.env.API_KEY}`)
+          .post(`/contacts?apiKey=${process.env.API_KEY}`)
           .send({
             first_name: 'Jane',
             last_name: 'Doe',
@@ -106,12 +106,12 @@ describe('customers endpoints', () => {
     });
   });
 
-  describe('PUT /customers/:id', () => {
+  describe('PUT /contacts/:id', () => {
     describe('without api key', () => {
       let res;
       beforeAll(async () => {
-        const customer = await Customer.create(validCustomer);
-        res = await request(app).put(`/customers/${customer.id}`).send({
+        const contact = await Contact.create(validContact);
+        res = await request(app).put(`/contacts/${contact.id}`).send({
           first_name: 'Jane',
           last_name: 'Doe',
         });
@@ -122,13 +122,13 @@ describe('customers endpoints', () => {
       });
     });
 
-    describe('with a valid cutomer', () => {
+    describe('with a valid contact', () => {
       let res;
-      let customer;
+      let contact;
       beforeAll(async () => {
-        customer = await Customer.create(validCustomer);
+        contact = await Contact.create(validContact);
         res = await request(app)
-          .put(`/customers/${customer.id}?apiKey=${process.env.API_KEY}`)
+          .put(`/contacts/${contact.id}?apiKey=${process.env.API_KEY}`)
           .send({
             first_name: 'Jane',
             last_name: 'Do',
@@ -140,17 +140,17 @@ describe('customers endpoints', () => {
       });
 
       it('returns the entity with correct properties', () => {
-        expect(res.body.id).toBe(customer.id);
+        expect(res.body.id).toBe(contact.id);
         expect(res.body.first_name).toBe('Jane');
         expect(res.body.last_name).toBe('Do');
       });
     });
 
-    describe('with an non-existing customer id', () => {
+    describe('with an non-existing contact id', () => {
       let res;
       beforeAll(async () => {
         res = await request(app)
-          .put(`/customers/99999999?apiKey=${process.env.API_KEY}`)
+          .put(`/contacts/99999999?apiKey=${process.env.API_KEY}`)
           .send({
             first_name: 'Jane',
             last_name: 'Do',
@@ -163,12 +163,12 @@ describe('customers endpoints', () => {
     });
   });
 
-  describe('DELETE /customers/:id', () => {
+  describe('DELETE /contacts/:id', () => {
     describe('without api key', () => {
       let res;
       beforeAll(async () => {
-        const customer = await Customer.create(validCustomer);
-        res = await request(app).delete(`/customers/${customer.id}`);
+        const contact = await Contact.create(validContact);
+        res = await request(app).delete(`/contacts/${contact.id}`);
       });
 
       it('returns 401', () => {
@@ -176,12 +176,12 @@ describe('customers endpoints', () => {
       });
     });
 
-    describe('with a valid cutomer', () => {
+    describe('with a valid contact', () => {
       let res;
       beforeAll(async () => {
-        const customer = await Customer.create(validCustomer);
+        const contact = await Contact.create(validContact);
         res = await request(app).delete(
-          `/customers/${customer.id}?apiKey=${process.env.API_KEY}`
+          `/contacts/${contact.id}?apiKey=${process.env.API_KEY}`
         );
       });
 
@@ -190,11 +190,11 @@ describe('customers endpoints', () => {
       });
     });
 
-    describe('with an non-existing customer id', () => {
+    describe('with an non-existing contact id', () => {
       let res;
       beforeAll(async () => {
         res = await request(app).delete(
-          `/customers/99999999?apiKey=${process.env.API_KEY}`
+          `/contacts/99999999?apiKey=${process.env.API_KEY}`
         );
       });
 

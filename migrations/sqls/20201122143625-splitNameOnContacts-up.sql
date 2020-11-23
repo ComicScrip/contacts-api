@@ -1,15 +1,15 @@
 ALTER TABLE
-  customers
+  contacts
 ADD
   COLUMN first_name varchar(255) DEFAULT '';
 ALTER TABLE
-  customers
+  contacts
 ADD
   COLUMN last_name varchar(255) DEFAULT '';
 UPDATE
-  customers
+  contacts
 SET
   first_name = SUBSTRING_INDEX(name, ' ', 1),
   last_name = SUBSTRING_INDEX(name, ' ', -1);
 ALTER TABLE
-  customers DROP COLUMN name;
+  contacts DROP COLUMN name;

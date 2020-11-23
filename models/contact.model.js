@@ -1,8 +1,8 @@
 const omitBy = require('lodash/omitBy');
 const db = require('../db.js');
 
-module.exports.getFullName = (customer) => {
-  return `${customer.first_name} ${customer.last_name}`;
+module.exports.getFullName = (contact) => {
+  return `${contact.first_name} ${contact.last_name}`;
 };
 
 module.exports.create = async (newAttributes) => {
@@ -11,13 +11,13 @@ module.exports.create = async (newAttributes) => {
     (item) => typeof item === 'undefined'
   );
 
-  return db.query('INSERT INTO customers SET ?', attributes).then((res) => {
+  return db.query('INSERT INTO contacts SET ?', attributes).then((res) => {
     return { ...attributes, id: res.insertId };
   });
 };
 
 const findById = async (id) => {
-  const rows = await db.query(`SELECT * FROM customers WHERE id = ${id}`);
+  const rows = await db.query(`SELECT * FROM contacts WHERE id = ${id}`);
   if (rows.length) {
     return Promise.resolve(rows[0]);
   }
@@ -28,7 +28,7 @@ const findById = async (id) => {
 module.exports.findById = findById;
 
 module.exports.emailAlreadyExists = async (email) => {
-  const rows = await db.query('SELECT * FROM customers WHERE email = ?', [
+  const rows = await db.query('SELECT * FROM contacts WHERE email = ?', [
     email,
   ]);
   if (rows.length) {
@@ -38,12 +38,12 @@ module.exports.emailAlreadyExists = async (email) => {
 };
 
 module.exports.getAll = async () => {
-  return db.query('SELECT id, first_name, last_name, email FROM customers');
+  return db.query('SELECT id, first_name, last_name, email FROM contacts');
 };
 
 module.exports.updateById = async (id, newAttributes) => {
   return db
-    .query('UPDATE customers SET ? WHERE id = ?', [
+    .query('UPDATE contacts SET ? WHERE id = ?', [
       omitBy(newAttributes, (item) => typeof item === 'undefined'),
       id,
     ])
@@ -51,7 +51,7 @@ module.exports.updateById = async (id, newAttributes) => {
 };
 
 module.exports.remove = async (id) => {
-  const res = await db.query('DELETE FROM customers WHERE id = ?', id);
+  const res = await db.query('DELETE FROM contacts WHERE id = ?', id);
   if (res.affectedRows !== 0) {
     return Promise.resolve();
   }
@@ -61,5 +61,5 @@ module.exports.remove = async (id) => {
 };
 
 module.exports.removeAll = async () => {
-  return db.query('DELETE FROM customers');
+  return db.query('DELETE FROM contacts');
 };

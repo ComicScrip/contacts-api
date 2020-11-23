@@ -70,7 +70,7 @@ Si vous voulez importer une base existante :
 
 Si vous voulez partir d'une base vierge : 
   - Cliquer sur "Nouvelle base de données" dans le menu de gauche de PHPMyAdmin.
-  - Entrer "customers_api_database" dans le champ "Nom de la base de donnée", puis cliquer sur le bouton "creer" à droite du champ nom.
+  - Entrer "contacts_api_database" dans le champ "Nom de la base de donnée", puis cliquer sur le bouton "creer" à droite du champ nom.
 
 ### STEP 3 : créer l'API
   - Caprover > Apps > entrer "api" dans l'input, cocher "Has persistant data" , cliquer sur le bouton "Create New App"
@@ -83,7 +83,7 @@ DB_PORT=3306
 DB_USER=root
 DB_PASS=[DB_PASS]
 API_KEY=[API_KEY] 
-DB_NAME=customers_api_database
+DB_NAME=contacts_api_database
 ```
   - Cliquer sur "Add Persistent directory" plus bas
   - Renseigner dans Path in App : /usr/src/app/file-storage

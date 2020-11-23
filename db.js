@@ -9,7 +9,7 @@ class Database {
         port: process.env.DB_PORT_TEST || '3308',
         user: process.env.DB_USER_TEST || 'root',
         password: process.env.DB_PASS_TEST || 'root',
-        database: process.env.DB_NAME_TEST || 'customer_api_database_test',
+        database: process.env.DB_NAME_TEST || 'contact_api_database_test',
         multipleStatements: true,
       });
     } else {
@@ -18,7 +18,7 @@ class Database {
         port: process.env.DB_PORT || '3307',
         user: process.env.DB_USER || 'root',
         password: process.env.DB_PASS || 'root',
-        database: process.env.DB_NAME || 'customer_api_database',
+        database: process.env.DB_NAME || 'contact_api_database',
         connectionLimit: 10,
         multipleStatements: true,
       });
@@ -64,7 +64,7 @@ class Database {
       this.tableNames = (
         await this.query(
           `SELECT table_name FROM information_schema.tables where LOWER(table_schema) = '${
-            process.env.DB_NAME_TEST || 'customer_api_database_test'
+            process.env.DB_NAME_TEST || 'contact_api_database_test'
           }' AND table_name != 'migrations'`
         )
       ).map((row) => row.table_name || row.TABLE_NAME);

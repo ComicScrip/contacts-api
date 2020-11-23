@@ -1,4 +1,4 @@
-const Customer = require('../models/customer.model.js');
+const Contact = require('../models/contact.model.js');
 
 module.exports.create = async (req, res) => {
   if (!req.body) {
@@ -14,51 +14,51 @@ module.exports.create = async (req, res) => {
   }
 
   try {
-    if (await Customer.emailAlreadyExists(req.body.email)) {
+    if (await Contact.emailAlreadyExists(req.body.email)) {
       return res
         .status(400)
-        .send({ errorMessage: 'A customer with this email already exists !' });
+        .send({ errorMessage: 'A contact with this email already exists !' });
     }
-    const data = await Customer.create({ first_name, last_name, email });
+    const data = await Contact.create({ first_name, last_name, email });
     return res.status(201).send(data);
   } catch (err) {
     return res.status(500).send({
       errorMessage:
-        err.message || 'Some error occurred while creating the Customer.',
+        err.message || 'Some error occurred while creating the Contact.',
     });
   }
 };
 
 module.exports.findAll = async (req, res) => {
   try {
-    const rawData = await Customer.getAll();
+    const rawData = await Contact.getAll();
     res.send(
       rawData.map((c) => ({
         id: c.id,
-        name: Customer.getFullName(c),
+        name: Contact.getFullName(c),
         email: c.email,
       }))
     );
   } catch (err) {
     res.status(500).send({
       errorMessage:
-        err.message || 'Some error occurred while retrieving customers.',
+        err.message || 'Some error occurred while retrieving contacts.',
     });
   }
 };
 
 module.exports.findOne = async (req, res) => {
   try {
-    const data = await Customer.findById(req.params.id);
+    const data = await Contact.findById(req.params.id);
     res.send(data);
   } catch (err) {
     if (err.kind === 'not_found') {
       res
         .status(404)
-        .send({ errorMessage: `Customer with id ${req.params.id} not found.` });
+        .send({ errorMessage: `Contact with id ${req.params.id} not found.` });
     } else {
       res.status(500).send({
-        errorMessage: `Error retrieving Customer with id ${req.params.id}`,
+        errorMessage: `Error retrieving Contact with id ${req.params.id}`,
       });
     }
   }
@@ -72,7 +72,7 @@ module.exports.update = async (req, res) => {
   const { first_name, last_name, email } = req.body;
 
   try {
-    const data = await Customer.updateById(req.params.id, {
+    const data = await Contact.updateById(req.params.id, {
       first_name,
       last_name,
       email,
@@ -82,10 +82,10 @@ module.exports.update = async (req, res) => {
     if (err.kind === 'not_found') {
       res
         .status(404)
-        .send({ errorMessage: `Customer with id ${req.params.id} not found.` });
+        .send({ errorMessage: `Contact with id ${req.params.id} not found.` });
     } else {
       res.status(500).send({
-        errorMessage: `Error updating Customer with id ${req.params.id}`,
+        errorMessage: `Error updating Contact with id ${req.params.id}`,
       });
     }
   }
@@ -93,16 +93,16 @@ module.exports.update = async (req, res) => {
 
 module.exports.delete = async (req, res) => {
   try {
-    await Customer.remove(req.params.id);
-    res.send({ message: 'Customer was deleted successfully!' });
+    await Contact.remove(req.params.id);
+    res.send({ message: 'Contact was deleted successfully!' });
   } catch (err) {
     if (err.kind === 'not_found') {
       res.status(404).send({
-        errorMessage: `Customer with id ${req.params.id} not found.`,
+        errorMessage: `Contact with id ${req.params.id} not found.`,
       });
     } else {
       res.status(500).send({
-        message: `Could not delete Customer with id ${req.params.id}`,
+        message: `Could not delete Contact with id ${req.params.id}`,
       });
     }
   }

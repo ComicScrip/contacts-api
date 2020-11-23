@@ -37,8 +37,8 @@ It will just execute the tests without settting up the DB and running the migrat
 ## Without Docker
 
 Install MySQL on your OS and create two databases on your MySQL instance :
-- customer_api_database
-- customer_api_database_test
+- contact_api_database
+- contact_api_database_test
 
 Then, change the `DB_*` variables in `.env` file to match your own MySQL DB settings
 
@@ -64,7 +64,7 @@ in contributor local databases but also in the pre-prod/prod environments' DBs.
 
 Here's an exemple of the helper command usage : 
 ```
-NAME=splitNameOnCustomers npm run create-db-migration
+NAME=splitNameOnContacts npm run create-db-migration
 ```
 (Replace the NAME variable value by the name of your change). It will create two SQL files in the `migrations/sqls` folder. One file is executed on the DB when applying changes (migrating up) and the other is run when rolling back changes (migrating down).
 

@@ -1,12 +1,12 @@
 ALTER TABLE
-  customers
+  contacts
 ADD
   COLUMN name varchar(255) DEFAULT '';
 UPDATE
-  customers
+  contacts
 SET
   name = CONCAT(first_name, ' ', last_name);
 ALTER TABLE
-  customers DROP COLUMN first_name;
+  contacts DROP COLUMN first_name;
 ALTER TABLE
-  customers DROP COLUMN last_name;
+  contacts DROP COLUMN last_name;
