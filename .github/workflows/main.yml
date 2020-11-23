@@ -1,7 +1,7 @@
 name: Integration tests MySQL
 on:
   pull_request:
-    branches: [master, dev]
+    branches: [main, dev]
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -25,11 +25,13 @@ jobs:
       - run: DB_HOST_TEST=localhost DB_PORT_TEST=3306 DB_USER_TEST=root DB_PASS_TEST=WildWildPass DB_NAME_TEST=contact_api_database_test db-migrate up -e test
       - run: npm test
         env:
+          NODE_ENV: 'test'
           CI: true
-          PORT: 3001
+          SERVER_PORT_TEST: 3001
           DB_DIALECT: mysql
           DB_HOST_TEST: localhost
           DB_USER_TEST: root
           DB_PASS_TEST: WildWildPass
           DB_NAME_TEST: contact_api_database_test
           DB_PORT_TEST: 3306
+          API_KEY: 'H56RT67FVgf233smn56FGgfPMnbCsz6'

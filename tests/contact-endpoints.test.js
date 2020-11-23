@@ -8,6 +8,11 @@ const validContact = {
   email: 'john.doe@gmail.com',
 };
 
+const validContact2 = {
+  first_name: 'Jane',
+  last_name: 'Doe',
+  email: 'jane.doe@gmail.com',
+};
 describe('contacts endpoints', () => {
   describe('GET /contacts', () => {
     describe('when there are two contacts in DB', () => {
@@ -15,11 +20,7 @@ describe('contacts endpoints', () => {
       beforeEach(async () => {
         await Promise.all([
           Contact.create(validContact),
-          Contact.create({
-            first_name: 'Jane',
-            last_name: 'Doe',
-            email: 'jane.doe@gmail.com',
-          }),
+          Contact.create(validContact2),
         ]);
         res = await request(app).get('/contacts');
       });
@@ -28,9 +29,18 @@ describe('contacts endpoints', () => {
         expect(res.status).toBe(200);
       });
 
-      it('the returned data is an array containing two elements', async () => {
+      it('the returned body is an array containing two elements', async () => {
         expect(Array.isArray(res.body));
         expect(res.body.length).toBe(2);
+      });
+
+      it('the returned elements have expected properties', async () => {
+        const expectedProps = ['id', 'name', 'email'];
+        res.body.forEach((element) => {
+          expectedProps.forEach((prop) => {
+            expect(element[prop]).not.toBe(undefined);
+          });
+        });
       });
     });
   });
@@ -55,7 +65,7 @@ describe('contacts endpoints', () => {
   });
 
   describe('POST /contacts', () => {
-    describe('whithout apiKey', () => {
+    describe('whithout api key', () => {
       let res;
       beforeAll(async () => {
         res = await request(app).post('/contacts').send(validContact);

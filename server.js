@@ -34,7 +34,7 @@ process.on('beforeExit', () => {
 app.use(express.json());
 app.use(cors());
 
-app.use('/contacts', require('./routes/contact.routes.js'));
+app.use('/contacts', require('./routes/contact.routes'));
 
 app.use('/', (req, res) => {
   res.redirect('/contacts');
