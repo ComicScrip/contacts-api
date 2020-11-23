@@ -82,6 +82,7 @@ DB_HOST=srv-captain--api-db
 DB_PORT=3306
 DB_USER=root
 DB_PASS=[DB_PASS]
+API_KEY=[API_KEY] 
 DB_NAME=customers_api_database
 ```
   - Cliquer sur "Add Persistent directory" plus bas

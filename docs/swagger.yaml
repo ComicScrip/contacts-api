@@ -32,6 +32,11 @@ paths:
       summary: 'Add a new customer'
       description: ''
       parameters:
+        - name: 'apiKey'
+          in: 'query'
+          description: 'The key needed to access some parts of the API'
+          required: true
+          type: 'string'
         - in: 'body'
           name: 'customer'
           description: 'Customer object that needs to be added in DB'
@@ -56,6 +61,8 @@ paths:
             properties:
               errorMessage:
                 type: 'string'
+        '401':
+          description: 'Unauthorized'
 
   /customers/{customerId}:
     get:
@@ -85,6 +92,11 @@ paths:
       summary: 'Update an existing customer'
       description: ''
       parameters:
+        - name: 'apiKey'
+          in: 'query'
+          description: 'The key needed to access some parts of the API'
+          required: true
+          type: 'string'
         - name: 'customerId'
           in: 'path'
           description: 'ID of customer to return'
@@ -112,12 +124,19 @@ paths:
             properties:
               errorMessage:
                 type: 'string'
+        '401':
+          description: 'Unauthorized'
     delete:
       tags:
         - 'customer'
       summary: 'Deletes a customer'
       description: ''
       parameters:
+        - name: 'apiKey'
+          in: 'query'
+          description: 'The key needed to access some parts of the API'
+          required: true
+          type: 'string'
         - name: 'customerId'
           in: 'path'
           description: 'customer id to delete'
@@ -129,6 +148,8 @@ paths:
           description: 'customer not found'
         '200':
           description: 'OK'
+        '401':
+          description: 'Unauthorized'
 definitions:
   CustomerEditableAttributes:
     type: 'object'
