@@ -42,7 +42,6 @@ module.exports.getAll = async () => {
 };
 
 module.exports.updateById = async (id, newAttributes) => {
-  console.log(newAttributes);
   return db
     .query('UPDATE customers SET ? WHERE id = ?', [
       omitBy(newAttributes, (item) => typeof item === 'undefined'),
