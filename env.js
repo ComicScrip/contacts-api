@@ -10,7 +10,7 @@ function getEnv(varibale) {
 }
 
 const inProdEnv = getEnv('NODE_ENV') === 'production';
-const inDevEnv = getEnv('NODE_ENV') === 'development';
+const inDevEnv = getEnv('NODE_ENV') === 'dev';
 const inTestEnv = getEnv('NODE_ENV') === 'test';
 
 const API_KEY = getEnv(`API_KEY`);

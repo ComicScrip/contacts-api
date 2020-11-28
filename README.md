@@ -60,7 +60,7 @@ npm run test
 
 If, while developping, you must change the structure of the database to fit new requirements, 
 you HAVE TO write a database migration script in order for the changes to be propagated 
-in contributor local databases but also in the pre-prod/prod environments' DBs.
+in contributors local databases but also in the pre-prod/prod environments' DBs.
 
 Here's an exemple of the helper command usage : 
 ```

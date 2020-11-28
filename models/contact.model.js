@@ -13,8 +13,20 @@ const emailAlreadyExists = async (email) => {
   return false;
 };
 
-const validate = async (attributes, options = { forUpdate: false }) => {
-  const { forUpdate } = options;
+const findOne = async (id, failIfNotFound = true) => {
+  const rows = await db.query(`SELECT * FROM contacts WHERE id = ${id}`);
+  if (rows.length) {
+    return rows[0];
+  }
+  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
+  return null;
+};
+
+const validate = async (
+  attributes,
+  options = { forUpdate: false, id: null }
+) => {
+  const { forUpdate, id } = options;
   const schema = Joi.object().keys({
     first_name: Joi.string().alphanum().min(0).max(30),
     last_name: Joi.string().alphanum().min(0).max(30),
@@ -25,20 +37,23 @@ const validate = async (attributes, options = { forUpdate: false }) => {
     abortEarly: false,
   });
   if (error) throw new ValidationError(error.details);
-  if (attributes.email && (await emailAlreadyExists(attributes.email))) {
-    throw new ValidationError([
-      { message: 'email already taken', path: ['email'], type: 'unique' },
-    ]);
-  }
-};
 
-const findOne = async (id, failIfNotFound = true) => {
-  const rows = await db.query(`SELECT * FROM contacts WHERE id = ${id}`);
-  if (rows.length) {
-    return rows[0];
+  if (attributes.email) {
+    let shouldThrow = false;
+    if (forUpdate) {
+      const toUpdate = await findOne(id);
+      shouldThrow =
+        !(toUpdate.email === attributes.email) &&
+        (await emailAlreadyExists(attributes.email));
+    } else {
+      shouldThrow = await emailAlreadyExists(attributes.email);
+    }
+    if (shouldThrow) {
+      throw new ValidationError([
+        { message: 'email already taken', path: ['email'], type: 'unique' },
+      ]);
+    }
   }
-  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
-  return null;
 };
 
 const create = async (newAttributes) => {
@@ -56,7 +71,7 @@ const findMany = async () => {
 };
 
 const updateOne = async (id, newAttributes) => {
-  await validate(newAttributes, { forUpdate: true });
+  await validate(newAttributes, { forUpdate: true, id });
   const namedAttributes = definedAttributesToSqlSet(newAttributes);
   return db
     .query(`UPDATE contacts SET ${namedAttributes} WHERE id = :id`, {

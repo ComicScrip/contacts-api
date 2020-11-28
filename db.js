@@ -19,22 +19,29 @@ class Database {
       multipleStatements: true,
       namedPlaceholders: true,
     };
-    const connect = inTestEnv ? mysql.createConnection : mysql.createPool;
-    this.connection = connect(connectionOptions);
+    this.connection = mysql.createConnection(connectionOptions);
+    this.pool = mysql.createPool(connectionOptions);
     return this;
   }
 
   async query(...args) {
+    // unfortunatly, format on pooled connection does not seem to support named parameters
+    // So we're artificially keeping a second non-pooled connection just to format the query
     const sql = this.connection.format(...args);
     // console.log(sql);
-    return this.connection
+
+    // But we're actually sending the prepared query to the pool
+    return this.pool
       .promise()
       .query(sql)
       .then(([res]) => res);
   }
 
   async closeConnection() {
-    return this.connection.promise().end();
+    return Promise.all([
+      this.connection.promise().end(),
+      this.pool.promise().end(),
+    ]);
   }
 
   async deleteAllData() {
