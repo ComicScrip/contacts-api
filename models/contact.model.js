@@ -1,25 +1,7 @@
-const omitBy = require('lodash/omitBy');
 const Joi = require('joi');
 const db = require('../db.js');
 const { RecordNotFoundError, ValidationError } = require('../error-types');
-
-const definedAttributesToSql = (attributes) =>
-  Object.keys(omitBy(attributes, (item) => typeof item === 'undefined'))
-    .map((k) => `${k} = :${k}`)
-    .join(',');
-
-const getFullName = (contact) => {
-  return `${contact.first_name} ${contact.last_name}`;
-};
-
-const findOne = async (id, failIfNotFound = true) => {
-  const rows = await db.query(`SELECT * FROM contacts WHERE id = ${id}`);
-  if (rows.length) {
-    return rows[0];
-  }
-  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
-  return null;
-};
+const definedAttributesToSqlSet = require('../helpers/definedAttributesToSQLSet.js');
 
 const emailAlreadyExists = async (email) => {
   const rows = await db.query('SELECT * FROM contacts WHERE email = ?', [
@@ -31,26 +13,36 @@ const emailAlreadyExists = async (email) => {
   return false;
 };
 
-const create = async (newAttributes) => {
+const validate = async (attributes, forUpdate = false) => {
   const schema = Joi.object().keys({
     first_name: Joi.string().alphanum().min(0).max(30),
     last_name: Joi.string().alphanum().min(0).max(30),
-    email: Joi.string().email().required(),
+    email: forUpdate ? Joi.string().email() : Joi.string().email().required(),
   });
 
-  const { error } = schema.validate(newAttributes, {
+  const { error } = schema.validate(attributes, {
     abortEarly: false,
   });
   if (error) throw new ValidationError(error.details);
-
-  const emailExists = await emailAlreadyExists(newAttributes.email);
-  if (emailExists) {
+  if (attributes.email && (await emailAlreadyExists(attributes.email))) {
     throw new ValidationError({ email: 'already exists' });
   }
+};
 
+const findOne = async (id, failIfNotFound = true) => {
+  const rows = await db.query(`SELECT * FROM contacts WHERE id = ${id}`);
+  if (rows.length) {
+    return rows[0];
+  }
+  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
+  return null;
+};
+
+const create = async (newAttributes) => {
+  await validate(newAttributes);
   return db
     .query(
-      `INSERT INTO contacts SET ${definedAttributesToSql(newAttributes)}`,
+      `INSERT INTO contacts SET ${definedAttributesToSqlSet(newAttributes)}`,
       newAttributes
     )
     .then((res) => findOne(res.insertId));
@@ -61,7 +53,7 @@ const findMany = async () => {
 };
 
 const updateOne = async (id, newAttributes) => {
-  const namedAttributes = definedAttributesToSql(newAttributes);
+  const namedAttributes = definedAttributesToSqlSet(newAttributes);
   return db
     .query(`UPDATE contacts SET ${namedAttributes} WHERE id = :id`, {
       ...newAttributes,
@@ -76,10 +68,15 @@ const removeOne = async (id, failIfNotFound = true) => {
     return true;
   }
   if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
-  else return false;
+  return false;
+};
+
+const getFullName = (contact) => {
+  return `${contact.first_name} ${contact.last_name}`;
 };
 
 module.exports = {
+  validate,
   getFullName,
   create,
   findMany,
