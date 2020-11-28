@@ -10,8 +10,7 @@ router.post(
   requireRequestBody,
   asyncHandler(contactsController.handlePost)
 );
-router.get('/', asyncHandler(contactsController.findAll));
-
+router.get('/', asyncHandler(contactsController.getCollection));
 router.get('/:id', asyncHandler(contactsController.findOne));
 router.put(
   '/:id',

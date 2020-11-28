@@ -1,9 +1,9 @@
-const { ValidationError } = require('../error-types');
+const { RecordNotFoundError } = require('../error-types');
 
 // eslint-disable-next-line
 module.exports = (error, req, res, next) => {
-  if (error instanceof ValidationError)
-    return res.status(422).send({
+  if (error instanceof RecordNotFoundError)
+    return res.status(404).send({
       errorMessage: error.message,
       ...error,
     });

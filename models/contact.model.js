@@ -1,70 +1,89 @@
 const omitBy = require('lodash/omitBy');
+const Joi = require('joi');
 const db = require('../db.js');
-const { RecordNotFoundError } = require('../error-types');
+const { RecordNotFoundError, ValidationError } = require('../error-types');
 
 const definedAttributesToSql = (attributes) =>
   Object.keys(omitBy(attributes, (item) => typeof item === 'undefined'))
     .map((k) => `${k} = :${k}`)
     .join(',');
 
-module.exports.getFullName = (contact) => {
+const getFullName = (contact) => {
   return `${contact.first_name} ${contact.last_name}`;
 };
 
-const findById = async (id) => {
+const findOne = async (id, failIfNotFound = true) => {
   const rows = await db.query(`SELECT * FROM contacts WHERE id = ${id}`);
   if (rows.length) {
-    return Promise.resolve(rows[0]);
+    return rows[0];
   }
-  const err = new RecordNotFoundError();
-  err.kind = 'not_found';
-  return Promise.reject(err);
+  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
+  return null;
 };
-module.exports.findById = findById;
 
-module.exports.create = async (newAttributes) => {
+const emailAlreadyExists = async (email) => {
+  const rows = await db.query('SELECT * FROM contacts WHERE email = ?', [
+    email,
+  ]);
+  if (rows.length) {
+    return true;
+  }
+  return false;
+};
+
+const create = async (newAttributes) => {
+  const schema = Joi.object().keys({
+    first_name: Joi.string().alphanum().min(0).max(30),
+    last_name: Joi.string().alphanum().min(0).max(30),
+    email: Joi.string().email().required(),
+  });
+
+  const { error } = schema.validate(newAttributes, {
+    abortEarly: false,
+  });
+  if (error) throw new ValidationError(error.details);
+
+  const emailExists = await emailAlreadyExists(newAttributes.email);
+  if (emailExists) {
+    throw new ValidationError({ email: 'already exists' });
+  }
+
   return db
     .query(
       `INSERT INTO contacts SET ${definedAttributesToSql(newAttributes)}`,
       newAttributes
     )
-    .then((res) => findById(res.insertId));
+    .then((res) => findOne(res.insertId));
 };
 
-module.exports.emailAlreadyExists = async (email) => {
-  const rows = await db.query('SELECT * FROM contacts WHERE email = ?', [
-    email,
-  ]);
-  if (rows.length) {
-    return Promise.resolve(true);
-  }
-  return Promise.resolve(false);
+const findMany = async () => {
+  return db.query('SELECT * FROM contacts');
 };
 
-module.exports.getAll = async () => {
-  return db.query('SELECT id, first_name, last_name, email FROM contacts');
-};
-
-module.exports.updateById = async (id, newAttributes) => {
+const updateOne = async (id, newAttributes) => {
   const namedAttributes = definedAttributesToSql(newAttributes);
   return db
     .query(`UPDATE contacts SET ${namedAttributes} WHERE id = :id`, {
       ...newAttributes,
       id,
     })
-    .then(() => findById(id));
+    .then(() => findOne(id));
 };
 
-module.exports.remove = async (id) => {
+const removeOne = async (id, failIfNotFound = true) => {
   const res = await db.query('DELETE FROM contacts WHERE id = ?', id);
   if (res.affectedRows !== 0) {
-    return Promise.resolve();
+    return true;
   }
-  const err = new Error();
-  err.kind = 'not_found';
-  return Promise.reject(err);
+  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
+  else return false;
 };
 
-module.exports.removeAll = async () => {
-  return db.query('DELETE FROM contacts');
+module.exports = {
+  getFullName,
+  create,
+  findMany,
+  findOne,
+  updateOne,
+  removeOne,
 };

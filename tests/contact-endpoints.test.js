@@ -89,18 +89,34 @@ describe(`contacts endpoints`, () => {
     });
     describe('when a contact with the same email already exists in DB', () => {
       beforeAll(async () => {
-        createRecord(validEntity);
+        await createRecord(validEntity);
+        res = await request(app)
+          .post(`/contacts?apiKey=${process.env.API_KEY}`)
+          .send(validEntity);
+      });
+
+      it('returns a 422 status', async () => {
+        expect(res.status).toBe(422);
+      });
+
+      it('retuns an error message', async () => {
+        expect(res.body).toHaveProperty('errorMessage');
+      });
+    });
+
+    describe('when email is not provided', () => {
+      beforeAll(async () => {
+        await createRecord(validEntity);
         res = await request(app)
           .post(`/contacts?apiKey=${process.env.API_KEY}`)
           .send({
             first_name: 'Jane',
             last_name: 'Doe',
-            email: 'john.doe@gmail.com',
           });
       });
 
-      it('returns a 400 status', async () => {
-        expect(res.status).toBe(400);
+      it('returns a 422 status', async () => {
+        expect(res.status).toBe(422);
       });
 
       it('retuns an error message', async () => {
@@ -171,8 +187,8 @@ describe(`contacts endpoints`, () => {
         );
       });
 
-      it('returns 200', () => {
-        expect(res.status).toBe(200);
+      it('returns 204', () => {
+        expect(res.status).toBe(204);
       });
     });
     describe('with an non-existing entity id', () => {
