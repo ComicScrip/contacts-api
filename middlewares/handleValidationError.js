@@ -1,5 +1,4 @@
 module.exports = (error, req, res) => {
-  console.error(error.stack);
   res
     .status(422)
     .send(

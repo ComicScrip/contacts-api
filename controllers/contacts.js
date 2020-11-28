@@ -1,51 +1,31 @@
 const Contact = require('../models/contact.model.js');
 const { RecordNotFoundError } = require('../error-types.js');
 
-module.exports.create = async (req, res) => {
-  if (!req.body) {
-    return res
-      .status(400)
-      .send({ errorMessage: 'request body cannot be empty!' });
-  }
-
+module.exports.handlePost = async (req, res) => {
   const { first_name, last_name, email } = req.body;
 
   if (!email) {
     return res.status(400).send({ errorMessage: 'Email can not be empty!' });
   }
 
-  try {
-    if (await Contact.emailAlreadyExists(req.body.email)) {
-      return res
-        .status(400)
-        .send({ errorMessage: 'A contact with this email already exists !' });
-    }
-    const data = await Contact.create({ first_name, last_name, email });
-    return res.status(201).send(data);
-  } catch (err) {
-    return res.status(500).send({
-      errorMessage:
-        err.message || 'Some error occurred while creating the Contact.',
-    });
+  if (await Contact.emailAlreadyExists(req.body.email)) {
+    return res
+      .status(400)
+      .send({ errorMessage: 'A contact with this email already exists !' });
   }
+  const data = await Contact.create({ first_name, last_name, email });
+  return res.status(201).send(data);
 };
 
 module.exports.findAll = async (req, res) => {
-  try {
-    const rawData = await Contact.getAll();
-    res.send(
-      rawData.map((c) => ({
-        id: c.id,
-        name: Contact.getFullName(c),
-        email: c.email,
-      }))
-    );
-  } catch (err) {
-    res.status(500).send({
-      errorMessage:
-        err.message || 'Some error occurred while retrieving contacts.',
-    });
-  }
+  const rawData = await Contact.getAll();
+  res.send(
+    rawData.map((c) => ({
+      id: c.id,
+      name: Contact.getFullName(c),
+      email: c.email,
+    }))
+  );
 };
 
 module.exports.findOne = async (req, res) => {
@@ -65,7 +45,7 @@ module.exports.findOne = async (req, res) => {
   }
 };
 
-module.exports.update = async (req, res, next) => {
+module.exports.update = async (req, res) => {
   if (!req.body) {
     res.status(400).send({ errorMessage: 'request body can not be empty!' });
   }
@@ -84,8 +64,6 @@ module.exports.update = async (req, res, next) => {
       res
         .status(404)
         .send({ errorMessage: `Contact with id ${req.params.id} not found.` });
-    } else {
-      next(err);
     }
   }
 };
