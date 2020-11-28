@@ -119,6 +119,12 @@ describe(`contacts endpoints`, () => {
 
       it('retuns an error message', async () => {
         expect(res.body).toHaveProperty('errorMessage');
+        expect(Array.isArray(res.body.errorsByField)).toBe(true);
+        expect(
+          !!res.body.errorsByField.find(
+            (e) => e.path.includes('email') && e.type === 'unique'
+          )
+        ).toBe(true);
       });
     });
 
@@ -138,6 +144,32 @@ describe(`contacts endpoints`, () => {
         expect(res.body).toHaveProperty('errorMessage');
       });
     });
+
+    describe('when first or last name exceed 30 caracters', () => {
+      beforeAll(async () => {
+        res = await request(app).post(`/contacts?apiKey=${API_KEY}`).send({
+          first_name:
+            'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
+          last_name:
+            'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
+        });
+      });
+
+      it('returns a 422 status', async () => {
+        expect(res.status).toBe(422);
+      });
+
+      it('retuns an error message', async () => {
+        expect(res.body).toHaveProperty('errorMessage');
+        expect(Array.isArray(res.body.errorsByField)).toBe(true);
+        expect(
+          !!res.body.errorsByField.find((e) => e.path.includes('first_name'))
+        ).toBe(true);
+        expect(
+          !!res.body.errorsByField.find((e) => e.path.includes('last_name'))
+        ).toBe(true);
+      });
+    });
   });
   describe(`PUT /contacts/:id`, () => {
     describe('without api key', () => {
@@ -151,6 +183,41 @@ describe(`contacts endpoints`, () => {
 
       it('returns 401', () => {
         expect(res.status).toBe(401);
+      });
+    });
+    describe('whithout request body', () => {
+      beforeAll(async () => {
+        testedEntity = await createRecord();
+        res = await request(app).put(
+          `/contacts/${testedEntity.id}?apiKey=${API_KEY}`
+        );
+      });
+
+      it('returns 400 status', async () => {
+        expect(res.statusCode).toEqual(400);
+      });
+    });
+    describe('when a contact with the same email already exists in DB', () => {
+      beforeAll(async () => {
+        testedEntity = await createRecord();
+        payload = { ...getValidAttributes(), email: testedEntity.email };
+        res = await request(app)
+          .put(`/contacts/${testedEntity.id}?apiKey=${API_KEY}`)
+          .send(payload);
+      });
+
+      it('returns a 422 status', async () => {
+        expect(res.status).toBe(422);
+      });
+
+      it('retuns an error message', async () => {
+        expect(res.body).toHaveProperty('errorMessage');
+        expect(Array.isArray(res.body.errorsByField)).toBe(true);
+        expect(
+          !!res.body.errorsByField.find(
+            (e) => e.path.includes('email') && e.type === 'unique'
+          )
+        ).toBe(true);
       });
     });
     describe('with a valid entity', () => {
