@@ -1,29 +1,27 @@
 const request = require('supertest');
+const faker = require('faker');
 const app = require('../app.js');
 const Contact = require('../models/contact.model.js');
+const { API_KEY } = require('../env.js');
 
-const validEntity = {
-  first_name: 'John',
-  last_name: 'Doe',
-  email: 'john.doe@gmail.com',
-};
-const validEntity2 = {
-  first_name: 'Jane',
-  last_name: 'Doe',
-  email: 'jane.doe@gmail.com',
-};
-const createRecord = (entity) => Contact.create(entity);
+const getValidAttributes = () => ({
+  first_name: faker.name.firstName(),
+  last_name: faker.name.lastName(),
+  email: faker.unique(faker.internet.email),
+});
+
+const createRecord = (attributes) =>
+  Contact.create(attributes || getValidAttributes());
+
 let res;
 let testedEntity;
+let payload;
 
 describe(`contacts endpoints`, () => {
   describe(`GET /contacts`, () => {
     describe('when there are two items in DB', () => {
       beforeEach(async () => {
-        await Promise.all([
-          createRecord(validEntity),
-          createRecord(validEntity2),
-        ]);
+        await Promise.all([createRecord(), createRecord()]);
         res = await request(app).get('/contacts');
       });
 
@@ -49,7 +47,7 @@ describe(`contacts endpoints`, () => {
   describe(`GET /contacts/:id`, () => {
     describe('with existing entity id', () => {
       beforeAll(async () => {
-        testedEntity = await Contact.create(validEntity);
+        testedEntity = await createRecord();
         res = await request(app).get(`/contacts/${testedEntity.id}`);
       });
 
@@ -62,7 +60,7 @@ describe(`contacts endpoints`, () => {
       });
     });
 
-    describe('with existing entity id', () => {
+    describe('with non-existing entity id', () => {
       beforeAll(async () => {
         res = await request(app).get(`/contacts/9999999999`);
       });
@@ -75,18 +73,28 @@ describe(`contacts endpoints`, () => {
   describe(`POST /contacts`, () => {
     describe('whithout api key', () => {
       beforeAll(async () => {
-        res = await request(app).post('/contacts').send(validEntity);
+        res = await request(app).post('/contacts').send(getValidAttributes());
       });
 
       it('returns 401 status', async () => {
         expect(res.statusCode).toEqual(401);
       });
     });
+    describe('whithout request body', () => {
+      beforeAll(async () => {
+        res = await request(app).post(`/contacts?apiKey=${API_KEY}`);
+      });
+
+      it('returns 400 status', async () => {
+        expect(res.statusCode).toEqual(400);
+      });
+    });
     describe('when a valid payload is sent', () => {
       beforeAll(async () => {
+        payload = getValidAttributes();
         res = await request(app)
-          .post(`/contacts?apiKey=${process.env.API_KEY}`)
-          .send(validEntity);
+          .post(`/contacts?apiKey=${API_KEY}`)
+          .send(payload);
       });
 
       it('returns 201 status', async () => {
@@ -99,9 +107,9 @@ describe(`contacts endpoints`, () => {
     });
     describe('when a contact with the same email already exists in DB', () => {
       beforeAll(async () => {
-        await createRecord(validEntity);
+        const validEntity = await createRecord();
         res = await request(app)
-          .post(`/contacts?apiKey=${process.env.API_KEY}`)
+          .post(`/contacts?apiKey=${API_KEY}`)
           .send(validEntity);
       });
 
@@ -116,13 +124,10 @@ describe(`contacts endpoints`, () => {
 
     describe('when email is not provided', () => {
       beforeAll(async () => {
-        await createRecord(validEntity);
-        res = await request(app)
-          .post(`/contacts?apiKey=${process.env.API_KEY}`)
-          .send({
-            first_name: 'Jane',
-            last_name: 'Doe',
-          });
+        res = await request(app).post(`/contacts?apiKey=${API_KEY}`).send({
+          first_name: 'Jane',
+          last_name: 'Doe',
+        });
       });
 
       it('returns a 422 status', async () => {
@@ -137,8 +142,8 @@ describe(`contacts endpoints`, () => {
   describe(`PUT /contacts/:id`, () => {
     describe('without api key', () => {
       beforeAll(async () => {
-        const contact = await Contact.create(validEntity);
-        res = await request(app).put(`/contacts/${contact.id}`).send({
+        testedEntity = await createRecord();
+        res = await request(app).put(`/contacts/${testedEntity.id}`).send({
           first_name: 'Jane',
           last_name: 'Doe',
         });
@@ -150,10 +155,11 @@ describe(`contacts endpoints`, () => {
     });
     describe('with a valid entity', () => {
       beforeAll(async () => {
-        testedEntity = await Contact.create(validEntity);
+        testedEntity = await createRecord();
+        payload = getValidAttributes();
         res = await request(app)
-          .put(`/contacts/${testedEntity.id}?apiKey=${process.env.API_KEY}`)
-          .send({ first_name: 'Jane', last_name: 'Do' });
+          .put(`/contacts/${testedEntity.id}?apiKey=${API_KEY}`)
+          .send(payload);
       });
 
       it('returns 200', () => {
@@ -162,14 +168,15 @@ describe(`contacts endpoints`, () => {
 
       it('returns the entity with correct properties', () => {
         expect(res.body.id).toBe(testedEntity.id);
-        expect(res.body.first_name).toBe('Jane');
-        expect(res.body.last_name).toBe('Do');
+        Object.keys(payload).forEach((k) => {
+          expect(res.body[k]).toBe(payload[k]);
+        });
       });
     });
     describe('with an non-existing entity id', () => {
       beforeAll(async () => {
         res = await request(app)
-          .put(`/contacts/99999999?apiKey=${process.env.API_KEY}`)
+          .put(`/contacts/99999999?apiKey=${API_KEY}`)
           .send({ first_name: 'jane' });
       });
 
@@ -181,7 +188,7 @@ describe(`contacts endpoints`, () => {
   describe(`DELETE /contacts/:id`, () => {
     describe('without api key', () => {
       beforeAll(async () => {
-        const entity = await Contact.create(validEntity);
+        const entity = await createRecord();
         res = await request(app).delete(`/contacts/${entity.id}`);
       });
 
@@ -189,11 +196,11 @@ describe(`contacts endpoints`, () => {
         expect(res.status).toBe(401);
       });
     });
-    describe('with a valid entityt', () => {
+    describe('with a valid entity', () => {
       beforeAll(async () => {
-        const contact = await Contact.create(validEntity);
+        const contact = await createRecord();
         res = await request(app).delete(
-          `/contacts/${contact.id}?apiKey=${process.env.API_KEY}`
+          `/contacts/${contact.id}?apiKey=${API_KEY}`
         );
       });
 
@@ -203,9 +210,7 @@ describe(`contacts endpoints`, () => {
     });
     describe('with an non-existing entity id', () => {
       beforeAll(async () => {
-        res = await request(app).delete(
-          `/contacts/99999999?apiKey=${process.env.API_KEY}`
-        );
+        res = await request(app).delete(`/contacts/99999999?apiKey=${API_KEY}`);
       });
 
       it('returns 404', () => {
