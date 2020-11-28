@@ -2,7 +2,6 @@ const request = require('supertest');
 const app = require('../app.js');
 const Contact = require('../models/contact.model.js');
 
-const collectionName = 'contacts';
 const validEntity = {
   first_name: 'John',
   last_name: 'Doe',
@@ -17,202 +16,175 @@ const createRecord = (entity) => Contact.create(entity);
 let res;
 let testedEntity;
 
-const testPostValidPayload = () => {
-  beforeAll(async () => {
-    res = await request(app)
-      .post(`/contacts?apiKey=${process.env.API_KEY}`)
-      .send(validEntity);
-  });
-
-  it('returns 201 status', async () => {
-    expect(res.statusCode).toEqual(201);
-  });
-
-  it('returns the id of the created contact', async () => {
-    expect(res.body).toHaveProperty('id');
-  });
-};
-
-const testPostDuplicateEmail = () => {
-  beforeAll(async () => {
-    createRecord(validEntity);
-    res = await request(app)
-      .post(`/contacts?apiKey=${process.env.API_KEY}`)
-      .send({
-        first_name: 'Jane',
-        last_name: 'Doe',
-        email: 'john.doe@gmail.com',
+describe(`contacts endpoints`, () => {
+  describe(`GET /contacts`, () => {
+    describe('when there are two items in DB', () => {
+      beforeEach(async () => {
+        await Promise.all([
+          Contact.create(validEntity),
+          Contact.create(validEntity2),
+        ]);
+        res = await request(app).get('/contacts');
       });
-  });
 
-  it('returns a 400 status', async () => {
-    expect(res.status).toBe(400);
-  });
+      it('status is 200', async () => {
+        expect(res.status).toBe(200);
+      });
 
-  it('retuns an error message', async () => {
-    expect(res.body).toHaveProperty('errorMessage');
-  });
-};
+      it('the returned body is an array containing two elements', async () => {
+        expect(Array.isArray(res.body));
+        expect(res.body.length).toBe(2);
+      });
 
-const testPutWithoutApiKey = () => {
-  beforeAll(async () => {
-    const contact = await Contact.create(validEntity);
-    res = await request(app).put(`/contacts/${contact.id}`).send({
-      first_name: 'Jane',
-      last_name: 'Doe',
-    });
-  });
-
-  it('returns 401', () => {
-    expect(res.status).toBe(401);
-  });
-};
-
-const testGetCollectionWithTwoItems = () => {
-  beforeEach(async () => {
-    await Promise.all([
-      Contact.create(validEntity),
-      Contact.create(validEntity2),
-    ]);
-    res = await request(app).get('/contacts');
-  });
-
-  it('status is 200', async () => {
-    expect(res.status).toBe(200);
-  });
-
-  it('the returned body is an array containing two elements', async () => {
-    expect(Array.isArray(res.body));
-    expect(res.body.length).toBe(2);
-  });
-
-  it('the returned elements have expected properties', async () => {
-    const expectedProps = ['id', 'name', 'email'];
-    res.body.forEach((element) => {
-      expectedProps.forEach((prop) => {
-        expect(element[prop]).not.toBe(undefined);
+      it('the returned elements have expected properties', async () => {
+        const expectedProps = ['id', 'name', 'email'];
+        res.body.forEach((element) => {
+          expectedProps.forEach((prop) => {
+            expect(element[prop]).not.toBe(undefined);
+          });
+        });
       });
     });
   });
-};
+  describe(`GET /contacts/:id`, () => {
+    describe('with existing entity id', () => {
+      beforeAll(async () => {
+        testedEntity = await Contact.create(validEntity);
+        res = await request(app).get(`/contacts/${testedEntity.id}`);
+      });
 
-const testGetItem = () => {
-  beforeAll(async () => {
-    testedEntity = await Contact.create(validEntity);
-    res = await request(app).get(`/${collectionName}/${testedEntity.id}`);
-  });
+      it('returns 200', () => {
+        expect(res.status).toBe(200);
+      });
 
-  it('returns 200', () => {
-    expect(res.status).toBe(200);
+      it('returned object in body has correct properties', () => {
+        expect(res.body).toEqual(testedEntity);
+      });
+    });
   });
+  describe(`POST /contacts`, () => {
+    describe('whithout api key', () => {
+      beforeAll(async () => {
+        res = await request(app).post('/contacts').send(validEntity);
+      });
 
-  it('returned object in body has correct properties', () => {
-    expect(res.body).toEqual(testedEntity);
-  });
-};
+      it('returns 401 status', async () => {
+        expect(res.statusCode).toEqual(401);
+      });
+    });
+    describe('when a valid payload is sent', () => {
+      beforeAll(async () => {
+        res = await request(app)
+          .post(`/contacts?apiKey=${process.env.API_KEY}`)
+          .send(validEntity);
+      });
 
-const testPostWithoutApiKey = () => {
-  beforeAll(async () => {
-    res = await request(app).post('/contacts').send(validEntity);
-  });
+      it('returns 201 status', async () => {
+        expect(res.statusCode).toEqual(201);
+      });
 
-  it('returns 401 status', async () => {
-    expect(res.statusCode).toEqual(401);
-  });
-};
+      it('returns the id of the created contact', async () => {
+        expect(res.body).toHaveProperty('id');
+      });
+    });
+    describe('when a contact with the same email already exists in DB', () => {
+      beforeAll(async () => {
+        createRecord(validEntity);
+        res = await request(app)
+          .post(`/contacts?apiKey=${process.env.API_KEY}`)
+          .send({
+            first_name: 'Jane',
+            last_name: 'Doe',
+            email: 'john.doe@gmail.com',
+          });
+      });
 
-const testPutWithValidEntity = () => {
-  beforeAll(async () => {
-    testedEntity = await Contact.create(validEntity);
-    res = await request(app)
-      .put(
-        `/${collectionName}/${testedEntity.id}?apiKey=${process.env.API_KEY}`
-      )
-      .send({ first_name: 'Jane', last_name: 'Do' });
-  });
+      it('returns a 400 status', async () => {
+        expect(res.status).toBe(400);
+      });
 
-  it('returns 200', () => {
-    expect(res.status).toBe(200);
+      it('retuns an error message', async () => {
+        expect(res.body).toHaveProperty('errorMessage');
+      });
+    });
   });
+  describe(`PUT /contacts/:id`, () => {
+    describe('without api key', () => {
+      beforeAll(async () => {
+        const contact = await Contact.create(validEntity);
+        res = await request(app).put(`/contacts/${contact.id}`).send({
+          first_name: 'Jane',
+          last_name: 'Doe',
+        });
+      });
 
-  it('returns the entity with correct properties', () => {
-    expect(res.body.id).toBe(testedEntity.id);
-    expect(res.body.first_name).toBe('Jane');
-    expect(res.body.last_name).toBe('Do');
-  });
-};
+      it('returns 401', () => {
+        expect(res.status).toBe(401);
+      });
+    });
+    describe('with a valid entity', () => {
+      beforeAll(async () => {
+        testedEntity = await Contact.create(validEntity);
+        res = await request(app)
+          .put(`/contacts/${testedEntity.id}?apiKey=${process.env.API_KEY}`)
+          .send({ first_name: 'Jane', last_name: 'Do' });
+      });
 
-const testDeleteWithoutApiKey = () => {
-  beforeAll(async () => {
-    const entity = await Contact.create(validEntity);
-    res = await request(app).delete(`/${collectionName}/${entity.id}`);
-  });
+      it('returns 200', () => {
+        expect(res.status).toBe(200);
+      });
 
-  it('returns 401', () => {
-    expect(res.status).toBe(401);
-  });
-};
+      it('returns the entity with correct properties', () => {
+        expect(res.body.id).toBe(testedEntity.id);
+        expect(res.body.first_name).toBe('Jane');
+        expect(res.body.last_name).toBe('Do');
+      });
+    });
+    describe('with an non-existing entity id', () => {
+      beforeAll(async () => {
+        res = await request(app)
+          .put(`/contacts/99999999?apiKey=${process.env.API_KEY}`)
+          .send({ first_name: 'jane' });
+      });
 
-const testPutWithNonExistingId = () => {
-  beforeAll(async () => {
-    res = await request(app)
-      .put(`/contacts/99999999?apiKey=${process.env.API_KEY}`)
-      .send({ first_name: 'jane' });
+      it('returns 404', () => {
+        expect(res.status).toBe(404);
+      });
+    });
   });
+  describe(`DELETE /contacts/:id`, () => {
+    describe('without api key', () => {
+      beforeAll(async () => {
+        const entity = await Contact.create(validEntity);
+        res = await request(app).delete(`/contacts/${entity.id}`);
+      });
 
-  it('returns 404', () => {
-    expect(res.status).toBe(404);
-  });
-};
+      it('returns 401', () => {
+        expect(res.status).toBe(401);
+      });
+    });
+    describe('with a valid entityt', () => {
+      beforeAll(async () => {
+        const contact = await Contact.create(validEntity);
+        res = await request(app).delete(
+          `/contacts/${contact.id}?apiKey=${process.env.API_KEY}`
+        );
+      });
 
-const testDeleteValidContact = () => {
-  beforeAll(async () => {
-    const contact = await Contact.create(validEntity);
-    res = await request(app).delete(
-      `/contacts/${contact.id}?apiKey=${process.env.API_KEY}`
-    );
-  });
+      it('returns 200', () => {
+        expect(res.status).toBe(200);
+      });
+    });
+    describe('with an non-existing entity id', () => {
+      beforeAll(async () => {
+        res = await request(app).delete(
+          `/contacts/99999999?apiKey=${process.env.API_KEY}`
+        );
+      });
 
-  it('returns 200', () => {
-    expect(res.status).toBe(200);
-  });
-};
-
-const testDeleteWithUnexistingEntity = () => {
-  beforeAll(async () => {
-    res = await request(app).delete(
-      `/${collectionName}/99999999?apiKey=${process.env.API_KEY}`
-    );
-  });
-
-  it('returns 404', () => {
-    expect(res.status).toBe(404);
-  });
-};
-
-describe(`${collectionName} endpoints`, () => {
-  describe(`GET /${collectionName}`, () => {
-    describe('when there are two items in DB', testGetCollectionWithTwoItems);
-  });
-  describe(`GET /${collectionName}/:id`, () => {
-    describe('with existing entity id', testGetItem);
-  });
-  describe(`POST /${collectionName}`, () => {
-    describe('whithout api key', testPostWithoutApiKey);
-    describe('when a valid payload is sent', testPostValidPayload);
-    describe(
-      'when a contact with the same email already exists in DB',
-      testPostDuplicateEmail
-    );
-  });
-  describe(`PUT /${collectionName}/:id`, () => {
-    describe('without api key', testPutWithoutApiKey);
-    describe('with a valid entity', testPutWithValidEntity);
-    describe('with an non-existing entity id', testPutWithNonExistingId);
-  });
-  describe(`DELETE /${collectionName}/:id`, () => {
-    describe('without api key', testDeleteWithoutApiKey);
-    describe('with a valid entityt', testDeleteValidContact);
-    describe('with an non-existing entity id', testDeleteWithUnexistingEntity);
+      it('returns 404', () => {
+        expect(res.status).toBe(404);
+      });
+    });
   });
 });

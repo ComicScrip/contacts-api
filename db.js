@@ -26,7 +26,7 @@ class Database {
 
   async query(...args) {
     const sql = this.connection.format(...args);
-    console.log(sql);
+    // console.log(sql);
     return this.connection
       .promise()
       .query(sql)
