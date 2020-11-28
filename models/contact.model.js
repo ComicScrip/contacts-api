@@ -13,7 +13,8 @@ const emailAlreadyExists = async (email) => {
   return false;
 };
 
-const validate = async (attributes, forUpdate = false) => {
+const validate = async (attributes, options = { forUpdate: false }) => {
+  const { forUpdate } = options;
   const schema = Joi.object().keys({
     first_name: Joi.string().alphanum().min(0).max(30),
     last_name: Joi.string().alphanum().min(0).max(30),
@@ -25,7 +26,9 @@ const validate = async (attributes, forUpdate = false) => {
   });
   if (error) throw new ValidationError(error.details);
   if (attributes.email && (await emailAlreadyExists(attributes.email))) {
-    throw new ValidationError({ email: 'already exists' });
+    throw new ValidationError([
+      { message: 'email already taken', path: ['email'], type: 'unique' },
+    ]);
   }
 };
 
@@ -53,6 +56,7 @@ const findMany = async () => {
 };
 
 const updateOne = async (id, newAttributes) => {
+  await validate(newAttributes, { forUpdate: true });
   const namedAttributes = definedAttributesToSqlSet(newAttributes);
   return db
     .query(`UPDATE contacts SET ${namedAttributes} WHERE id = :id`, {

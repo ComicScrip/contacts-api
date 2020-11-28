@@ -21,8 +21,8 @@ describe(`contacts endpoints`, () => {
     describe('when there are two items in DB', () => {
       beforeEach(async () => {
         await Promise.all([
-          Contact.create(validEntity),
-          Contact.create(validEntity2),
+          createRecord(validEntity),
+          createRecord(validEntity2),
         ]);
         res = await request(app).get('/contacts');
       });
@@ -59,6 +59,16 @@ describe(`contacts endpoints`, () => {
 
       it('returned object in body has correct properties', () => {
         expect(res.body).toEqual(testedEntity);
+      });
+    });
+
+    describe('with existing entity id', () => {
+      beforeAll(async () => {
+        res = await request(app).get(`/contacts/9999999999`);
+      });
+
+      it('returns 404', () => {
+        expect(res.status).toBe(404);
       });
     });
   });
