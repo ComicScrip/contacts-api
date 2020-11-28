@@ -1,17 +1,13 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
-
-const PORT =
-  process.env.NODE_ENV === 'test'
-    ? process.env.SERVER_PORT_TEST || 5001
-    : process.env.SERVER_PORT || 5000;
+const { inTestEnv, inProdEnv, SERVER_PORT } = require('./env');
+const handleServerInternalError = require('./middlewares/handleServerInternalError');
 
 const app = express();
 
-if (process.env.NODE_ENV !== 'production') {
+if (!inProdEnv) {
   const swaggerDocument = YAML.load('./docs/swagger.yaml');
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
@@ -31,30 +27,18 @@ process.on('beforeExit', () => {
 });
 
 // middlewares
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use('/contacts', require('./routes/contact.routes'));
+require('./routes')(app);
 
-app.use('/', (req, res) => {
-  res.redirect('/contacts');
-});
-
-app.use((err, req, res) => {
-  if (err.name === 'UnauthorizedError') {
-    res.status(401).send('invalid token...');
-  }
-});
-app.use((error, req, res) => {
-  console.error(error.stack);
-  res.status(500).send('Something Broke!');
-});
 app.set('x-powered-by', false);
+app.use(handleServerInternalError);
 
-// set port, listen for requests
-const server = app.listen(PORT, () => {
-  if (process.env.NODE_ENV !== 'test') {
-    console.log(`Server running on port ${PORT}`);
+const server = app.listen(SERVER_PORT, () => {
+  if (!inTestEnv) {
+    console.log(`Server running on port ${SERVER_PORT}`);
   }
 });
 

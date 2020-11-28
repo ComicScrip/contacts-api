@@ -1,19 +1,14 @@
 const omitBy = require('lodash/omitBy');
 const db = require('../db.js');
+const { RecordNotFoundError } = require('../error-types');
+
+const definedAttributesToSql = (attributes) =>
+  Object.keys(omitBy(attributes, (item) => typeof item === 'undefined'))
+    .map((k) => `${k} = :${k}`)
+    .join(',');
 
 module.exports.getFullName = (contact) => {
   return `${contact.first_name} ${contact.last_name}`;
-};
-
-module.exports.create = async (newAttributes) => {
-  const attributes = omitBy(
-    newAttributes,
-    (item) => typeof item === 'undefined'
-  );
-
-  return db.query('INSERT INTO contacts SET ?', attributes).then((res) => {
-    return { ...attributes, id: res.insertId };
-  });
 };
 
 const findById = async (id) => {
@@ -21,11 +16,20 @@ const findById = async (id) => {
   if (rows.length) {
     return Promise.resolve(rows[0]);
   }
-  const err = new Error();
+  const err = new RecordNotFoundError();
   err.kind = 'not_found';
   return Promise.reject(err);
 };
 module.exports.findById = findById;
+
+module.exports.create = async (newAttributes) => {
+  return db
+    .query(
+      `INSERT INTO contacts SET ${definedAttributesToSql(newAttributes)}`,
+      newAttributes
+    )
+    .then((res) => findById(res.insertId));
+};
 
 module.exports.emailAlreadyExists = async (email) => {
   const rows = await db.query('SELECT * FROM contacts WHERE email = ?', [
@@ -42,11 +46,12 @@ module.exports.getAll = async () => {
 };
 
 module.exports.updateById = async (id, newAttributes) => {
+  const namedAttributes = definedAttributesToSql(newAttributes);
   return db
-    .query('UPDATE contacts SET ? WHERE id = ?', [
-      omitBy(newAttributes, (item) => typeof item === 'undefined'),
+    .query(`UPDATE contacts SET ${namedAttributes} WHERE id = :id`, {
+      ...newAttributes,
       id,
-    ])
+    })
     .then(() => findById(id));
 };
 

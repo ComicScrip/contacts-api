@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const contactsController = require('../controllers/contact.controller.js');
+const contactsController = require('../controllers/contacts.js');
 const protectByApiKey = require('../middlewares/protectByEnvAPIKey');
 
 router.post('/', protectByApiKey, contactsController.create);

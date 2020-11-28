@@ -1,9 +1,11 @@
+const { getEnv } = require('../env');
+
 module.exports = async (req, res, next) => {
-  if (req.query.apiKey !== process.env.API_KEY) {
+  if (req.query.apiKey !== getEnv('API_KEY')) {
     return res
       .status(401)
       .send(
-        'You need to provide the right apiKey query parameter to access this route'
+        'You need to provide a valid "apiKey" query parameter to access this route'
       );
   }
   return next();

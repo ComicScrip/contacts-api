@@ -1,56 +1,44 @@
-require('dotenv').config();
-const mysql = require('mysql');
+const mysql = require('mysql2');
+const {
+  inTestEnv,
+  DB_HOST,
+  DB_PORT,
+  DB_USER,
+  DB_PASS,
+  DB_NAME,
+} = require('./env');
 
 class Database {
   init() {
-    if (process.env.NODE_ENV === 'test') {
-      this.connection = mysql.createConnection({
-        host: process.env.DB_HOST_TEST || 'localhost',
-        port: process.env.DB_PORT_TEST || '3308',
-        user: process.env.DB_USER_TEST || 'root',
-        password: process.env.DB_PASS_TEST || 'root',
-        database: process.env.DB_NAME_TEST || 'contact_api_database_test',
-        multipleStatements: true,
-      });
-    } else {
-      this.connection = mysql.createPool({
-        host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || '3307',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASS || 'root',
-        database: process.env.DB_NAME || 'contact_api_database',
-        connectionLimit: 10,
-        multipleStatements: true,
-      });
-    }
-
+    const connectionOptions = {
+      host: DB_HOST,
+      port: DB_PORT,
+      user: DB_USER,
+      password: DB_PASS,
+      database: DB_NAME,
+      multipleStatements: true,
+      namedPlaceholders: true,
+    };
+    const connect = inTestEnv ? mysql.createConnection : mysql.createPool;
+    this.connection = connect(connectionOptions);
     return this;
   }
 
   async query(...args) {
-    return new Promise((resolve, reject) => {
-      this.connection.query(...args, (err, res) => {
-        if (err) reject(err);
-        else resolve(res);
-      });
-    });
+    const sql = this.connection.format(...args);
+    console.log(sql);
+    return this.connection
+      .promise()
+      .query(sql)
+      .then(([res]) => res);
   }
 
   async closeConnection() {
-    return new Promise((resolve, reject) => {
-      if (this.connection) {
-        this.connection.end((err) => {
-          if (err) reject(err);
-          else resolve();
-        });
-      } else {
-        resolve();
-      }
-    });
+    return this.connection.promise().end();
   }
 
   async deleteAllData() {
-    if (process.env.NODE_ENV !== 'test')
+    if (!inTestEnv)
       throw new Error('Cannot truncate all table if not in test env !');
     const truncates = await this.getTableNames().then((tableNames) =>
       tableNames.map((name) => `TRUNCATE ${name};`).join(' ')

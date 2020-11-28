@@ -1,4 +1,5 @@
 const Contact = require('../models/contact.model.js');
+const { RecordNotFoundError } = require('../error-types.js');
 
 module.exports.create = async (req, res) => {
   if (!req.body) {
@@ -7,7 +8,7 @@ module.exports.create = async (req, res) => {
       .send({ errorMessage: 'request body cannot be empty!' });
   }
 
-  const { first_name, last_name, email } = req.body; // eslint-disable-line
+  const { first_name, last_name, email } = req.body;
 
   if (!email) {
     return res.status(400).send({ errorMessage: 'Email can not be empty!' });
@@ -64,7 +65,7 @@ module.exports.findOne = async (req, res) => {
   }
 };
 
-module.exports.update = async (req, res) => {
+module.exports.update = async (req, res, next) => {
   if (!req.body) {
     res.status(400).send({ errorMessage: 'request body can not be empty!' });
   }
@@ -79,14 +80,12 @@ module.exports.update = async (req, res) => {
     });
     res.send(data);
   } catch (err) {
-    if (err.kind === 'not_found') {
+    if (err instanceof RecordNotFoundError) {
       res
         .status(404)
         .send({ errorMessage: `Contact with id ${req.params.id} not found.` });
     } else {
-      res.status(500).send({
-        errorMessage: `Error updating Contact with id ${req.params.id}`,
-      });
+      next(err);
     }
   }
 };
