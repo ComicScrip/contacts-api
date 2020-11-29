@@ -1,7 +1,7 @@
 const request = require('supertest');
 const faker = require('faker');
 const app = require('../app.js');
-const Contact = require('../models/contact.model.js');
+const Contact = require('../models/contact.js');
 const { API_KEY } = require('../env.js');
 
 const getValidAttributes = () => ({

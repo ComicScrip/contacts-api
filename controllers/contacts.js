@@ -5,7 +5,7 @@ const {
   findOne,
   updateOne,
   removeOne,
-} = require('../models/contact.model.js');
+} = require('../models/contact.js');
 
 module.exports.handlePost = async (req, res) => {
   const { first_name, last_name, email } = req.body;
