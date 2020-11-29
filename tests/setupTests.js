@@ -1,3 +1,6 @@
+process.env.DB_URL =
+  'mysql://root:root@localhost:3308/contact_api_database_test';
+
 const db = require('../db.js');
 const app = require('../app.js');
 

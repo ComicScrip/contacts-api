@@ -1,23 +1,14 @@
 const Joi = require('joi');
-const db = require('../db.js');
+const { contacts } = require('../db').client;
 const { RecordNotFoundError, ValidationError } = require('../error-types');
-const definedAttributesToSqlSet = require('../helpers/definedAttributesToSQLSet.js');
 
 const emailAlreadyExists = async (email) => {
-  const rows = await db.query('SELECT * FROM contacts WHERE email = ?', [
-    email,
-  ]);
-  if (rows.length) {
-    return true;
-  }
-  return false;
+  return !!(await contacts.findFirst({ where: { email } }));
 };
 
 const findOne = async (id, failIfNotFound = true) => {
-  const rows = await db.query(`SELECT * FROM contacts WHERE id = ${id}`);
-  if (rows.length) {
-    return rows[0];
-  }
+  const contact = await contacts.findFirst({ where: { id: parseInt(id, 10) } });
+  if (contact) return contact;
   if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
   return null;
 };
@@ -28,8 +19,8 @@ const validate = async (
 ) => {
   const { forUpdate, id } = options;
   const schema = Joi.object().keys({
-    first_name: Joi.string().alphanum().min(0).max(30),
-    last_name: Joi.string().alphanum().min(0).max(30),
+    first_name: Joi.string().min(0).max(30),
+    last_name: Joi.string().min(0).max(30),
     email: forUpdate ? Joi.string().email() : Joi.string().email().required(),
   });
 
@@ -56,38 +47,33 @@ const validate = async (
   }
 };
 
-const create = async (newAttributes) => {
-  await validate(newAttributes);
-  return db
-    .query(
-      `INSERT INTO contacts SET ${definedAttributesToSqlSet(newAttributes)}`,
-      newAttributes
-    )
-    .then((res) => findOne(res.insertId));
+const create = async (data) => {
+  await validate(data);
+  return contacts.create({ data });
 };
 
 const findMany = async () => {
-  return db.query('SELECT * FROM contacts');
+  return contacts.findMany();
 };
 
-const updateOne = async (id, newAttributes) => {
-  await validate(newAttributes, { forUpdate: true, id });
-  const namedAttributes = definedAttributesToSqlSet(newAttributes);
-  return db
-    .query(`UPDATE contacts SET ${namedAttributes} WHERE id = :id`, {
-      ...newAttributes,
-      id,
-    })
-    .then(() => findOne(id));
+const updateOne = async (id, data) => {
+  await validate(data, { forUpdate: true, id });
+  try {
+    return await contacts.update({ where: { id: parseInt(id, 10) }, data });
+  } catch (e) {
+    throw new RecordNotFoundError('contact', id);
+  }
 };
 
 const removeOne = async (id, failIfNotFound = true) => {
-  const res = await db.query('DELETE FROM contacts WHERE id = ?', id);
-  if (res.affectedRows !== 0) {
+  try {
+    await contacts.delete({ where: { id: parseInt(id, 10) } });
     return true;
+  } catch (err) {
+    if (err.code === 'P2016' && failIfNotFound)
+      throw new RecordNotFoundError('contacts', id);
+    return false;
   }
-  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
-  return false;
 };
 
 const getFullName = (contact) => {

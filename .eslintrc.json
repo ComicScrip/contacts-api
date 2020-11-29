@@ -18,6 +18,8 @@
     "ignorePatterns": ["migrations/**"],
     "rules": {
         "no-console": "off",
-        "camelcase": "off"
+        "camelcase": "off",
+        "no-restricted-syntax": "off",
+        "no-await-in-loop": "off"
     }
 }
