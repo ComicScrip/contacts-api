@@ -12,7 +12,6 @@ jobs:
       - uses: haltuf/mysql-action@master
         with:
           host port: 3308
-          container port: 3308
           character set server: 'utf8' # Optional, default value is 'utf8mb4'. The '--character-set-server' option for mysqld
           collation server: 'utf8_general_ci' # Optional, default value is 'utf8mb4_general_ci'. The '--collation-server' option for mysqld
           mysql database: 'contact_api_database_test' # Optional, default value is "test". The specified database which will be create
@@ -24,7 +23,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
       - run: npm install
       - run: npm i -g db-migrate db-migrate-mysql
-      - run: DB_HOST_TEST=localhost DB_PORT_TEST=3308 DB_USER_TEST=root DB_PASS_TEST=WildWildPass DB_NAME_TEST=contact_api_database_test db-migrate up -e test
+      - run: DB_HOST_TEST=localhost DB_PORT_TEST=3308 DB_USER_TEST=root DB_PASS_TEST=root DB_NAME_TEST=contact_api_database_test db-migrate up -e test
       - run: npm test
         env:
           NODE_ENV: 'test'
@@ -33,7 +32,7 @@ jobs:
           DB_DIALECT: mysql
           DB_HOST_TEST: localhost
           DB_USER_TEST: root
-          DB_PASS_TEST: WildWildPass
+          DB_PASS_TEST: root
           DB_NAME_TEST: contact_api_database_test
           DB_PORT_TEST: 3308
           API_KEY: 'H56RT67FVgf233smn56FGgfPMnbCsz6'
