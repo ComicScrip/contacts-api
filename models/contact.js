@@ -84,7 +84,9 @@ const removeOne = async (id, failIfNotFound = true) => {
   if (res.affectedRows !== 0) {
     return true;
   }
-  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
+  if (failIfNotFound) {
+    throw new RecordNotFoundError('contacts', id);
+  }
   return false;
 };
 
