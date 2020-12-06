@@ -13,11 +13,12 @@
     "rollback-last-db-migration": "db-migrate down",
     "start": "npm-run-all migrate-db start:server",
     "start:watch": "npm-run-all migrate-db start:server:watch",
+    "dev": "npm-run-all setup-db wait-for-db start:watch",
     "test": "NODE_ENV=test jest --testRunner='jest-circus/runner' --maxWorkers=1",
     "test:setup-db": "docker-compose up -d test_db",
     "test:migrate-db": "db-migrate up -e test",
-    "wait-for-db": "node ./scripts/wait15s.js",
-    "test:setup-and-run": "npm-run-all test:setup-db wait-for-db test:migrate-db test",
+    "wait-for-db": "node ./scripts/wait-for-db.js",
+    "test:setup-and-run": "NODE_ENV=test npm-run-all test:setup-db wait-for-db test:migrate-db test",
     "lint": "eslint --fix ."
   },
   "husky": {

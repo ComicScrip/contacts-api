@@ -18,6 +18,7 @@
     "ignorePatterns": ["migrations/**"],
     "rules": {
         "no-console": "off",
-        "camelcase": "off"
+        "camelcase": "off",
+        "no-await-in-loop": "off"
     }
 }

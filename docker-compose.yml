@@ -38,7 +38,7 @@ services:
       - DB_PORT=3306
     ports:
       - '5000:5000'
-    command: 'bash -c "chmod u+x ./scripts/wait-for-it.sh && ./scripts/wait-for-it.sh db:3306 && npm run start:watch"'
+    command: 'bash -c "npm run wait-for-db && npm run start:watch"'
 
 volumes:
   contacts-db:
