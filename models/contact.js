@@ -22,14 +22,12 @@ const findOne = async (id, failIfNotFound = true) => {
   return null;
 };
 
-const validate = async (
-  attributes,
-  options = { forUpdate: false, id: null }
-) => {
-  const { forUpdate, id } = options;
+const validate = async (attributes, options = { udpatedRessourceId: null }) => {
+  const { udpatedRessourceId } = options;
+  const forUpdate = !!udpatedRessourceId;
   const schema = Joi.object().keys({
-    first_name: Joi.string().alphanum().min(0).max(30),
-    last_name: Joi.string().alphanum().min(0).max(30),
+    first_name: Joi.string().min(0).max(30),
+    last_name: Joi.string().min(0).max(30),
     email: forUpdate ? Joi.string().email() : Joi.string().email().required(),
   });
 
@@ -41,7 +39,7 @@ const validate = async (
   if (attributes.email) {
     let shouldThrow = false;
     if (forUpdate) {
-      const toUpdate = await findOne(id);
+      const toUpdate = await findOne(udpatedRessourceId);
       shouldThrow =
         !(toUpdate.email === attributes.email) &&
         (await emailAlreadyExists(attributes.email));
@@ -71,7 +69,7 @@ const findMany = async () => {
 };
 
 const updateOne = async (id, newAttributes) => {
-  await validate(newAttributes, { forUpdate: true, id });
+  await validate(newAttributes, { udpatedRessourceId: id });
   const namedAttributes = definedAttributesToSqlSet(newAttributes);
   return db
     .query(`UPDATE contacts SET ${namedAttributes} WHERE id = :id`, {

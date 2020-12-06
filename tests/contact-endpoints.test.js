@@ -5,8 +5,8 @@ const Contact = require('../models/contact.js');
 const { API_KEY } = require('../env.js');
 
 const getValidAttributes = () => ({
-  first_name: faker.name.firstName(),
-  last_name: faker.name.lastName(),
+  first_name: faker.name.firstName().substr(0, 20),
+  last_name: faker.name.lastName().substr(0, 20),
   email: faker.unique(faker.internet.email),
 });
 
