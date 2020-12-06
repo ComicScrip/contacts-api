@@ -14,7 +14,7 @@ const emailAlreadyExists = async (email) => {
 };
 
 const findOne = async (id, failIfNotFound = true) => {
-  const rows = await db.query(`SELECT * FROM contacts WHERE id = ${id}`);
+  const rows = await db.query(`SELECT * FROM contacts WHERE id = ?`, [id]);
   if (rows.length) {
     return rows[0];
   }
@@ -80,7 +80,7 @@ const updateOne = async (id, newAttributes) => {
 };
 
 const removeOne = async (id, failIfNotFound = true) => {
-  const res = await db.query('DELETE FROM contacts WHERE id = ?', id);
+  const res = await db.query('DELETE FROM contacts WHERE id = ?', [id]);
   if (res.affectedRows !== 0) {
     return true;
   }
