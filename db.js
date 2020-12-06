@@ -1,4 +1,6 @@
 const mysql = require('mysql2');
+const { PrismaClient } = require('@prisma/client');
+
 const {
   inTestEnv,
   DB_HOST,
@@ -21,6 +23,7 @@ class Database {
     };
     this.connection = mysql.createConnection(connectionOptions);
     this.pool = mysql.createPool(connectionOptions);
+    this.prisma = new PrismaClient();
     return this;
   }
 
@@ -41,6 +44,7 @@ class Database {
     return Promise.all([
       this.connection.promise().end(),
       this.pool.promise().end(),
+      this.prisma.$disconnect(),
     ]);
   }
 
