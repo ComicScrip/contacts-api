@@ -1,23 +1,29 @@
 const Joi = require('joi');
-const db = require('../db.js');
+const { contacts } = require('../db').prisma;
 const { RecordNotFoundError, ValidationError } = require('../error-types');
-const definedAttributesToSqlSet = require('../helpers/definedAttributesToSQLSet.js');
 
 const emailAlreadyExists = async (email) => {
-  const rows = await db.query('SELECT * FROM contacts WHERE email = ?', [
+  /* const rows = await db.query('SELECT * FROM contacts WHERE email = ?', [
     email,
   ]);
   if (rows.length) {
     return true;
   }
-  return false;
+  return false; */
+  return !!(await contacts.findUnique({ where: { email } }));
 };
 
 const findOne = async (id, failIfNotFound = true) => {
-  const rows = await db.query(`SELECT * FROM contacts WHERE id = ?`, [id]);
+  /* const rows = await db.query(`SELECT * FROM contacts WHERE id = ?`, [id]);
   if (rows.length) {
     return rows[0];
   }
+  if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
+  return null; */
+  const contact = await contacts.findUnique({
+    where: { id: parseInt(id, 10) },
+  });
+  if (contact) return contact;
   if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
   return null;
 };
@@ -54,38 +60,52 @@ const validate = async (attributes, options = { udpatedRessourceId: null }) => {
   }
 };
 
-const create = async (newAttributes) => {
-  await validate(newAttributes);
+const create = async (data) => {
+  /* await validate(newAttributes);
   return db
     .query(
       `INSERT INTO contacts SET ${definedAttributesToSqlSet(newAttributes)}`,
       newAttributes
     )
-    .then((res) => findOne(res.insertId));
+    .then((res) => findOne(res.insertId)); */
+  await validate(data);
+  return contacts.create({ data });
 };
 
-const findMany = async () => {
-  return db.query('SELECT * FROM contacts');
-};
+const findMany = async () => contacts.findMany();
 
-const updateOne = async (id, newAttributes) => {
-  await validate(newAttributes, { udpatedRessourceId: id });
-  const namedAttributes = definedAttributesToSqlSet(newAttributes);
+const updateOne = async (id, data) => {
+  await validate(data, { udpatedRessourceId: id });
+  try {
+    return await contacts.update({ where: { id: parseInt(id, 10) }, data });
+  } catch (e) {
+    throw new RecordNotFoundError('contacts', id);
+  }
+
+  /* const namedAttributes = definedAttributesToSqlSet(newAttributes);
   return db
     .query(`UPDATE contacts SET ${namedAttributes} WHERE id = :id`, {
       ...newAttributes,
       id,
     })
-    .then(() => findOne(id));
+    .then(() => findOne(id)); */
 };
 
 const removeOne = async (id, failIfNotFound = true) => {
-  const res = await db.query('DELETE FROM contacts WHERE id = ?', [id]);
+  /* const res = await db.query('DELETE FROM contacts WHERE id = ?', [id]);
   if (res.affectedRows !== 0) {
     return true;
   }
   if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
-  return false;
+  return false; */
+
+  try {
+    await contacts.delete({ where: { id: parseInt(id, 10) } });
+    return true;
+  } catch (e) {
+    if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
+    return false;
+  }
 };
 
 const getFullName = (contact) => {
