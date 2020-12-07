@@ -22,6 +22,7 @@ class Database {
     };
     this.connection = mysql.createConnection(connectionOptions);
     this.pool = mysql.createPool(connectionOptions);
+    // this.prisma = new PrismaClient({ log: ['query', 'info', 'warn'] });
     this.prisma = new PrismaClient();
     return this;
   }
