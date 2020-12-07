@@ -8,8 +8,31 @@ datasource db {
 }
 
 model contacts {
-  id         Int     @id @default(autoincrement())
-  email      String  @unique
-  first_name String? @default("")
-  last_name  String? @default("")
+  id            Int             @id @default(autoincrement())
+  email         String          @unique
+  first_name    String?         @default("")
+  last_name     String?         @default("")
+  address_id    Int?
+  address       addresses?      @relation(fields: [address_id], references: [id])
+  phone_numbers phone_numbers[]
+
+  @@index([address_id], name: "contacts_fk_address")
+}
+
+model addresses {
+  id       Int        @id @default(autoincrement())
+  street   String?
+  city     String?
+  zip      String?
+  contacts contacts[]
+}
+
+model phone_numbers {
+  id         Int       @id @default(autoincrement())
+  name       String?
+  number     String?
+  contact_id Int?
+  contact    contacts? @relation(fields: [contact_id], references: [id])
+
+  @@index([contact_id], name: "phone_numbers_fk_contact")
 }
