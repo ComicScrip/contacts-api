@@ -3,12 +3,7 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const cors = require('cors');
 const session = require('express-session');
-const {
-  inTestEnv,
-  inProdEnv,
-  SERVER_PORT,
-  SESSION_COOKIE_SECRET,
-} = require('./env');
+const { inTestEnv, SERVER_PORT, SESSION_COOKIE_SECRET } = require('./env');
 const sessionStore = require('./sessionStore');
 const handleServerInternalError = require('./middlewares/handleServerInternalError');
 const handleValidationError = require('./middlewares/handleValidationError');
@@ -19,7 +14,7 @@ const app = express();
 app.set('x-powered-by', false);
 
 // docs
-if (!inProdEnv && !inTestEnv) {
+if (!inTestEnv) {
   const swaggerDocument = YAML.load('./docs/swagger.yaml');
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 }
