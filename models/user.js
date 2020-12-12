@@ -22,6 +22,15 @@ const findOne = async (id, failIfNotFound = true) => {
   return null;
 };
 
+const findByEmail = async (email, failIfNotFound = true) => {
+  const rows = await db.query(`SELECT * FROM users WHERE email = ?`, [email]);
+  if (rows.length) {
+    return rows[0];
+  }
+  if (failIfNotFound) throw new RecordNotFoundError();
+  return null;
+};
+
 const validate = async (attributes, options = { udpatedRessourceId: null }) => {
   const { udpatedRessourceId } = options;
   const forUpdate = !!udpatedRessourceId;
@@ -93,6 +102,10 @@ const updateOne = async (id, newAttributes) => {
     .then(() => findOne(id));
 };
 
+const verifyPassword = async (user, password) => {
+  return argon2.verify(user.encrypted_password, password);
+};
+
 const removeOne = async (id, failIfNotFound = true) => {
   const res = await db.query('DELETE FROM users WHERE id = ?', [id]);
   if (res.affectedRows !== 0) {
@@ -109,4 +122,6 @@ module.exports = {
   findOne,
   updateOne,
   removeOne,
+  findByEmail,
+  verifyPassword,
 };

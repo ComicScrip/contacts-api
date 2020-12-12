@@ -13,7 +13,14 @@ class ValidationError extends Error {
   }
 }
 
+class UnauthorizedError extends Error {
+  constructor() {
+    super('Authorization is required');
+  }
+}
+
 module.exports = {
   RecordNotFoundError,
   ValidationError,
+  UnauthorizedError,
 };

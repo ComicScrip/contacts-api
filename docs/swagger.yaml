@@ -180,6 +180,11 @@ paths:
       summary: 'Add a new user'
       description: ''
       parameters:
+        - name: 'apiKey'
+          in: 'query'
+          description: 'The key needed to access some parts of the API'
+          required: true
+          type: 'string'
         - in: 'body'
           name: 'user'
           description: 'User object that needs to be added in DB'
