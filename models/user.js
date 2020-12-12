@@ -27,11 +27,16 @@ const validate = async (attributes, options = { udpatedRessourceId: null }) => {
   const forUpdate = !!udpatedRessourceId;
   const schema = Joi.object().keys({
     email: forUpdate ? Joi.string().email() : Joi.string().email().required(),
-    password: Joi.string().min(8).max(30).required(),
-    password_confirmation: Joi.any()
-      .equal(Joi.ref('password'))
-      .required()
-      .messages({ 'any.only': 'password_confirmation does not match' }),
+    password: forUpdate
+      ? Joi.string().min(8).max(30)
+      : Joi.string().min(8).max(30).required(),
+    password_confirmation: Joi.when('password', {
+      is: Joi.string().min(8).max(30).required(),
+      then: Joi.any()
+        .equal(Joi.ref('password'))
+        .required()
+        .messages({ 'any.only': 'password_confirmation does not match' }),
+    }),
   });
 
   const { error } = schema.validate(attributes, {

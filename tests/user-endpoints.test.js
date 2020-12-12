@@ -60,9 +60,6 @@ describe(`users endpoints`, () => {
 
       it('returned object in body has correct properties', () => {
         expect(res.body).toEqual(testedEntity);
-        expect(res.body.password_confirmation).toBe(undefined);
-        expect(res.body.password).toBe(undefined);
-        expect(res.body.encrypted_password).toBe(undefined);
       });
 
       it('returned object does not contain password', () => {
@@ -83,7 +80,17 @@ describe(`users endpoints`, () => {
     });
   });
   describe(`POST /users`, () => {
-    describe('whithout request body', () => {
+    describe('without api key', () => {
+      beforeAll(async () => {
+        testedEntity = await createRecord();
+        res = await request(app).post(`/users/`).send(getValidAttributes());
+      });
+
+      it('returns 401', () => {
+        expect(res.status).toBe(401);
+      });
+    });
+    describe('without request body', () => {
       beforeAll(async () => {
         res = await request(app).post(`/users?apiKey=${API_KEY}`);
       });
@@ -193,7 +200,7 @@ describe(`users endpoints`, () => {
         expect(res.status).toBe(401);
       });
     });
-    describe('whithout request body', () => {
+    describe('without request body', () => {
       beforeAll(async () => {
         testedEntity = await createRecord();
         res = await request(app).put(
@@ -205,6 +212,42 @@ describe(`users endpoints`, () => {
         expect(res.statusCode).toEqual(400);
       });
     });
+
+    describe('when passwords are not provided', () => {
+      beforeAll(async () => {
+        testedEntity = await createRecord();
+        payload = getValidAttributes();
+        delete payload.password_confirmation;
+        delete payload.password;
+        res = await request(app)
+          .put(`/users/${testedEntity.id}?apiKey=${API_KEY}`)
+          .send(payload);
+      });
+
+      it('returns a 200 status', async () => {
+        expect(res.status).toBe(200);
+      });
+    });
+
+    describe('when password is provided but password_confirmation is not provided', () => {
+      beforeAll(async () => {
+        testedEntity = await createRecord();
+        payload = getValidAttributes();
+        delete payload.password_confirmation;
+        res = await request(app)
+          .put(`/users/${testedEntity.id}?apiKey=${API_KEY}`)
+          .send(payload);
+      });
+
+      it('returns a 422 status', async () => {
+        expect(res.status).toBe(422);
+      });
+
+      it('retuns an error message', async () => {
+        expect(res.body).toHaveProperty('errorMessage');
+      });
+    });
+
     describe('when a user with the same email already exists in DB', () => {
       beforeAll(async () => {
         const other = await createRecord();

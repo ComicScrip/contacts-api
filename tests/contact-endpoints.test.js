@@ -71,7 +71,7 @@ describe(`contacts endpoints`, () => {
     });
   });
   describe(`POST /contacts`, () => {
-    describe('whithout api key', () => {
+    describe('without api key', () => {
       beforeAll(async () => {
         res = await request(app).post('/contacts').send(getValidAttributes());
       });
@@ -80,7 +80,7 @@ describe(`contacts endpoints`, () => {
         expect(res.statusCode).toEqual(401);
       });
     });
-    describe('whithout request body', () => {
+    describe('without request body', () => {
       beforeAll(async () => {
         res = await request(app).post(`/contacts?apiKey=${API_KEY}`);
       });
@@ -185,7 +185,7 @@ describe(`contacts endpoints`, () => {
         expect(res.status).toBe(401);
       });
     });
-    describe('whithout request body', () => {
+    describe('without request body', () => {
       beforeAll(async () => {
         testedEntity = await createRecord();
         res = await request(app).put(

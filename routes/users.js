@@ -4,7 +4,12 @@ const usersController = require('../controllers/users.js');
 const protectByApiKey = require('../middlewares/protectByEnvAPIKey');
 const requireRequestBody = require('../middlewares/requireRequestBody.js');
 
-router.post('/', requireRequestBody, asyncHandler(usersController.handlePost));
+router.post(
+  '/',
+  protectByApiKey,
+  requireRequestBody,
+  asyncHandler(usersController.handlePost)
+);
 router.get('/', asyncHandler(usersController.handleGetMany));
 router.get('/:id', asyncHandler(usersController.handleGetOne));
 router.put(
