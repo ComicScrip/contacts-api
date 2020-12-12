@@ -27,7 +27,7 @@ if (!inProdEnv && !inTestEnv) {
 // middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 app.use(
   session({
     key: 'contacts_api_session_id',
@@ -35,7 +35,6 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    secure: true,
   })
 );
 
