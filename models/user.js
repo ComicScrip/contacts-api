@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const argon2 = require('argon2');
 const db = require('../db.js');
 const { RecordNotFoundError, ValidationError } = require('../error-types');
 const definedAttributesToSqlSet = require('../helpers/definedAttributesToSQLSet.js');
@@ -14,6 +15,7 @@ const emailAlreadyExists = async (email) => {
 const findOne = async (id, failIfNotFound = true) => {
   const rows = await db.query(`SELECT * FROM users WHERE id = ?`, [id]);
   if (rows.length) {
+    delete rows[0].encrypted_password;
     return rows[0];
   }
   if (failIfNotFound) throw new RecordNotFoundError('users', id);
@@ -27,9 +29,9 @@ const validate = async (attributes, options = { udpatedRessourceId: null }) => {
     email: forUpdate ? Joi.string().email() : Joi.string().email().required(),
     password: Joi.string().min(8).max(30).required(),
     password_confirmation: Joi.any()
-      .valid(Joi.ref('password'))
+      .equal(Joi.ref('password'))
       .required()
-      .options({ language: { any: { allowOnly: 'must match password' } } }),
+      .messages({ 'any.only': 'password_confirmation does not match' }),
   });
 
   const { error } = schema.validate(attributes, {
@@ -57,10 +59,13 @@ const validate = async (attributes, options = { udpatedRessourceId: null }) => {
 
 const create = async (newAttributes) => {
   await validate(newAttributes);
+  const { password, password_confirmation, ...otherAttributes } = newAttributes;
+  const encrypted_password = await argon2.hash(password);
+  const attriutesToSave = { ...otherAttributes, encrypted_password };
   return db
     .query(
-      `INSERT INTO users SET ${definedAttributesToSqlSet(newAttributes)}`,
-      newAttributes
+      `INSERT INTO users SET ${definedAttributesToSqlSet(attriutesToSave)}`,
+      attriutesToSave
     )
     .then((res) => findOne(res.insertId));
 };
@@ -71,10 +76,13 @@ const findMany = async () => {
 
 const updateOne = async (id, newAttributes) => {
   await validate(newAttributes, { udpatedRessourceId: id });
-  const namedAttributes = definedAttributesToSqlSet(newAttributes);
+  const { password, password_confirmation, ...otherAttributes } = newAttributes;
+  const encrypted_password = password && (await argon2.hash(password));
+  const attriutesToSave = { ...otherAttributes, encrypted_password };
+  const namedAttributes = definedAttributesToSqlSet(attriutesToSave);
   return db
     .query(`UPDATE users SET ${namedAttributes} WHERE id = :id`, {
-      ...newAttributes,
+      ...attriutesToSave,
       id,
     })
     .then(() => findOne(id));

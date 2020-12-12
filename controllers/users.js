@@ -23,8 +23,8 @@ module.exports.handleGetOne = async (req, res) => {
 };
 
 module.exports.handlePatch = async (req, res) => {
-  const { first_name, last_name, email } = req.body;
-  const attributes = { first_name, last_name, email };
+  const { password, password_confirmation, email } = req.body;
+  const attributes = { password, password_confirmation, email };
   const data = await updateOne(req.params.id, attributes);
   res.send(data);
 };
