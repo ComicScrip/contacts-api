@@ -15,6 +15,7 @@ const inTestEnv = getEnv('NODE_ENV') === 'test';
 
 const API_KEY = getEnv(`API_KEY`);
 const SESSION_COOKIE_SECRET = getEnv(`SESSION_COOKIE_SECRET`);
+const CORS_ALLOWED_ORINGINS = getEnv(`CORS_ALLOWED_ORINGINS`);
 const SERVER_PORT = getEnv(`SERVER_PORT${inTestEnv ? '_TEST' : ''}`);
 
 const DB_HOST = getEnv(`DB_HOST${inTestEnv ? '_TEST' : ''}`);
@@ -36,4 +37,5 @@ module.exports = {
   DB_NAME,
   DB_PASS,
   SESSION_COOKIE_SECRET,
+  CORS_ALLOWED_ORINGINS,
 };
