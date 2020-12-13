@@ -50,7 +50,7 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    cookie: { sameSite: true },
+    cookie: { sameSite: true, secure: true },
   })
 );
 
