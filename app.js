@@ -19,6 +19,7 @@ const handleUnauthorizedError = require('./middlewares/handleUnauthorizedError')
 
 const app = express();
 app.set('x-powered-by', false);
+app.set('trust proxy', 1);
 
 // docs
 if (!inTestEnv && !inProdEnv) {
@@ -50,7 +51,7 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    cookie: { sameSite: true, secure: true },
+    cookie: { sameSite: true, secure: inProdEnv },
   })
 );
 
