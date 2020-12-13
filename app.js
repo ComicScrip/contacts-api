@@ -8,7 +8,6 @@ const {
   inProdEnv,
   SERVER_PORT,
   SESSION_COOKIE_SECRET,
-  CORS_ALLOWED_ORINGINS,
 } = require('./env');
 const sessionStore = require('./sessionStore');
 const handleServerInternalError = require('./middlewares/handleServerInternalError');
@@ -29,7 +28,7 @@ if (!inTestEnv && !inProdEnv) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const allowedOrigins = CORS_ALLOWED_ORINGINS.split(',');
+/* const allowedOrigins = CORS_ALLOWED_ORINGINS.split(',');
 const corsOptions = {
   origin: (origin, callback) => {
     if (allowedOrigins.indexOf(origin) !== -1) {
@@ -39,9 +38,13 @@ const corsOptions = {
     }
   },
   credentials: true,
-};
+}; */
 
-app.use(cors(corsOptions));
+app.use(cors());
+app.use((req, res, next) => {
+  console.log('incoming request : ', JSON.stringify(req));
+  next();
+});
 app.use(
   session({
     key: 'contacts_api_session_id',
