@@ -32,6 +32,7 @@ app.use(express.urlencoded({ extended: true }));
 const allowedOrigins = CORS_ALLOWED_ORINGINS.split(',');
 const corsOptions = {
   origin: (origin, callback) => {
+    console.log('origin : ', origin);
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
