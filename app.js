@@ -9,6 +9,7 @@ const {
   SERVER_PORT,
   SESSION_COOKIE_SECRET,
   CORS_ALLOWED_ORINGINS,
+  SESSION_COOKIE_NAME,
 } = require('./env');
 const sessionStore = require('./sessionStore');
 const handleServerInternalError = require('./middlewares/handleServerInternalError');
@@ -42,17 +43,14 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use((req, res, next) => {
-  console.log('incoming request : ', req);
-  next();
-});
 app.use(
   session({
-    key: 'contacts_api_session_id',
+    key: SESSION_COOKIE_NAME,
     secret: SESSION_COOKIE_SECRET,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
+    cookie: { secure: inProdEnv, sameSite: true },
   })
 );
 
