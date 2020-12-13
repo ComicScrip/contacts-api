@@ -42,7 +42,7 @@ const corsOptions = {
 
 app.use(cors());
 app.use((req, res, next) => {
-  console.log('incoming request : ', JSON.stringify(req));
+  console.log('incoming request : ', req);
   next();
 });
 app.use(
