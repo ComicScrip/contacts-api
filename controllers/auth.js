@@ -1,4 +1,4 @@
-const { SESSION_COOKIE_NAME } = require('../env');
+const { SESSION_COOKIE_NAME, SESSION_COOKIE_DOMAIN } = require('../env');
 const User = require('../models/user');
 
 module.exports.login = async (req, res) => {
@@ -20,7 +20,7 @@ module.exports.login = async (req, res) => {
 module.exports.logout = async (req, res) => {
   req.session.destroy((err) => {
     if (err) return res.status(400).send('Could not destroy session');
-    res.clearCookie(SESSION_COOKIE_NAME, { path: '/' });
+    res.clearCookie(SESSION_COOKIE_NAME, { domain: SESSION_COOKIE_DOMAIN });
     return res.status(200).send('session deleted');
   });
 };
