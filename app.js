@@ -54,6 +54,7 @@ app.use(
     cookie: {
       secure: inProdEnv,
       domain: '.comicscrip.duckdns.org',
+      sameSite: true,
     },
   })
 );
