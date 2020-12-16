@@ -54,7 +54,7 @@ app.use(
     cookie: {
       sameSite: true,
       secure: inProdEnv,
-      domain: 'https://auth-front.comicscrip.duckdns.org/',
+      domain: 'https://auth-front.comicscrip.duckdns.org',
     },
   })
 );
