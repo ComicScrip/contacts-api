@@ -52,9 +52,8 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: {
-      sameSite: true,
       secure: inProdEnv,
-      domain: 'https://auth-front.comicscrip.duckdns.org',
+      domain: 'auth-back.comicscrip.duckdns.org',
     },
   })
 );
