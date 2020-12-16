@@ -36,3 +36,6 @@ jobs:
           DB_NAME_TEST: contact_api_database_test
           DB_PORT_TEST: 3308
           API_KEY: 'H56RT67FVgf233smn56FGgfPMnbCsz6'
+          SESSION_COOKIE_NAME: contacts_api_session_id
+          SESSION_COOKIE_SECRET: GqR56DS54221&#fs@%gyuyaz
+          CORS_ALLOWED_ORINGINS: http://localhost:5001

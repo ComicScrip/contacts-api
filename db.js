@@ -10,7 +10,7 @@ const {
 
 class Database {
   init() {
-    const connectionOptions = {
+    this.connectionOptions = {
       host: DB_HOST,
       port: DB_PORT,
       user: DB_USER,
@@ -19,8 +19,9 @@ class Database {
       multipleStatements: true,
       namedPlaceholders: true,
     };
-    this.connection = mysql.createConnection(connectionOptions);
-    this.pool = mysql.createPool(connectionOptions);
+    this.connection = mysql.createConnection(this.connectionOptions);
+    this.pool = mysql.createPool(this.connectionOptions);
+
     return this;
   }
 
