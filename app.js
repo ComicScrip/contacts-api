@@ -51,7 +51,11 @@ app.use(
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
-    cookie: { sameSite: true, secure: inProdEnv },
+    cookie: {
+      sameSite: true,
+      secure: inProdEnv,
+      domain: 'https://auth-front.comicscrip.duckdns.org/',
+    },
   })
 );
 
