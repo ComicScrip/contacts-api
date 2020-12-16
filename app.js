@@ -53,7 +53,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: inProdEnv,
-      domain: 'auth-back.comicscrip.duckdns.org',
+      domain: '.comicscrip.duckdns.org',
     },
   })
 );
