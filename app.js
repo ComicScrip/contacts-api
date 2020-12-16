@@ -10,6 +10,7 @@ const {
   SESSION_COOKIE_SECRET,
   CORS_ALLOWED_ORINGINS,
   SESSION_COOKIE_NAME,
+  SESSION_COOKIE_DOMAIN,
 } = require('./env');
 const sessionStore = require('./sessionStore');
 const handleServerInternalError = require('./middlewares/handleServerInternalError');
@@ -53,7 +54,7 @@ app.use(
     saveUninitialized: false,
     cookie: {
       secure: inProdEnv,
-      domain: '.comicscrip.duckdns.org',
+      domain: SESSION_COOKIE_DOMAIN,
       sameSite: true,
     },
   })
