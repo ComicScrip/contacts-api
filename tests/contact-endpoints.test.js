@@ -10,8 +10,8 @@ const getValidAttributes = () => ({
   email: faker.unique(faker.internet.email),
 });
 
-const createRecord = (attributes) =>
-  Contact.create(attributes || getValidAttributes());
+const createRecord = (attributes = {}) =>
+  Contact.create({ ...getValidAttributes(), ...attributes });
 
 let res;
 let testedEntity;
@@ -19,7 +19,7 @@ let payload;
 
 describe(`contacts endpoints`, () => {
   describe(`GET /contacts`, () => {
-    describe('when there are two items in DB', () => {
+    describe('basic listing', () => {
       beforeEach(async () => {
         await Promise.all([createRecord(), createRecord()]);
         res = await request(app).get('/contacts');
@@ -30,16 +30,116 @@ describe(`contacts endpoints`, () => {
       });
 
       it('the returned body is an array containing two elements', async () => {
-        expect(Array.isArray(res.body));
-        expect(res.body.length).toBe(2);
+        expect(Array.isArray(res.body.items)).toBe(true);
+        expect(res.body.items.length).toBe(2);
       });
 
       it('the returned elements have expected properties', async () => {
         const expectedProps = ['id', 'name', 'email'];
-        res.body.forEach((element) => {
+        res.body.items.forEach((element) => {
           expectedProps.forEach((prop) => {
             expect(element[prop]).not.toBe(undefined);
           });
+        });
+      });
+    });
+
+    describe('pagination', () => {
+      describe('with limit param', () => {
+        beforeEach(async () => {
+          await Promise.all([createRecord(), createRecord(), createRecord()]);
+          res = await request(app).get('/contacts?limit=2');
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+        });
+
+        it('should return the total number of items', async () => {
+          expect(res.body.total).toBe(3);
+        });
+      });
+
+      describe('with offset param', () => {
+        beforeEach(async () => {
+          await Promise.all([createRecord(), createRecord(), createRecord()]);
+          res = await request(app).get('/contacts?offset=2');
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body));
+          expect(res.body.items.length).toBe(1);
+        });
+      });
+    });
+
+    describe('sorting', () => {
+      describe('firstName asc then lastName desc', () => {
+        let c1;
+        let c2;
+        let c3;
+        beforeEach(async () => {
+          c1 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'John',
+          });
+
+          c2 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'Jane',
+          });
+
+          c3 = await createRecord({
+            last_name: 'Doz',
+            first_name: 'Jane',
+          });
+
+          res = await request(app).get(
+            '/contacts?sort_by=first_name.asc,last_name.desc'
+          );
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(3);
+          expect(res.body.items[0].id).toBe(c3.id);
+          expect(res.body.items[1].id).toBe(c2.id);
+          expect(res.body.items[2].id).toBe(c1.id);
+        });
+      });
+
+      describe('lastName asc then firstName desc', () => {
+        let c1;
+        let c2;
+        let c3;
+        beforeEach(async () => {
+          c1 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'John',
+          });
+
+          c2 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'Jane',
+          });
+
+          c3 = await createRecord({
+            last_name: 'Doz',
+            first_name: 'Jane',
+          });
+
+          res = await request(app).get(
+            '/contacts?sort_by=last_name.asc,first_name.desc'
+          );
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(3);
+          expect(res.body.items[0].id).toBe(c1.id);
+          expect(res.body.items[1].id).toBe(c2.id);
+          expect(res.body.items[2].id).toBe(c3.id);
         });
       });
     });

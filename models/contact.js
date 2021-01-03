@@ -72,7 +72,11 @@ const create = async (data) => {
   return contacts.create({ data });
 };
 
-const findMany = async () => contacts.findMany();
+const findMany = async ({ limit, offset, orderBy }) =>
+  Promise.all([
+    contacts.findMany({ take: limit, skip: offset, orderBy }),
+    (await contacts.aggregate({ count: true })).count,
+  ]);
 
 const updateOne = async (id, data) => {
   /* await validate(newAttributes, { udpatedRessourceId: id });
