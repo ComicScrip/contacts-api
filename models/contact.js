@@ -72,9 +72,9 @@ const create = async (data) => {
   return contacts.create({ data });
 };
 
-const findMany = async ({ limit, offset, orderBy }) =>
+const findMany = async ({ limit, offset, orderBy, where }) =>
   Promise.all([
-    contacts.findMany({ take: limit, skip: offset, orderBy }),
+    contacts.findMany({ take: limit, skip: offset, orderBy, where }),
     (await contacts.aggregate({ count: true })).count,
   ]);
 

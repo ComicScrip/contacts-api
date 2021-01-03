@@ -44,36 +44,6 @@ describe(`contacts endpoints`, () => {
       });
     });
 
-    describe('pagination', () => {
-      describe('with limit param', () => {
-        beforeEach(async () => {
-          await Promise.all([createRecord(), createRecord(), createRecord()]);
-          res = await request(app).get('/contacts?limit=2');
-        });
-
-        it('should return correct items', async () => {
-          expect(Array.isArray(res.body.items)).toBe(true);
-          expect(res.body.items.length).toBe(2);
-        });
-
-        it('should return the total number of items', async () => {
-          expect(res.body.total).toBe(3);
-        });
-      });
-
-      describe('with offset param', () => {
-        beforeEach(async () => {
-          await Promise.all([createRecord(), createRecord(), createRecord()]);
-          res = await request(app).get('/contacts?offset=2');
-        });
-
-        it('should return correct items', async () => {
-          expect(Array.isArray(res.body));
-          expect(res.body.items.length).toBe(1);
-        });
-      });
-    });
-
     describe('sorting', () => {
       describe('firstName asc then lastName desc', () => {
         let c1;
@@ -140,6 +110,124 @@ describe(`contacts endpoints`, () => {
           expect(res.body.items[0].id).toBe(c1.id);
           expect(res.body.items[1].id).toBe(c2.id);
           expect(res.body.items[2].id).toBe(c3.id);
+        });
+      });
+    });
+
+    describe('filtering', () => {
+      let c1;
+      let c2;
+      let c3;
+      beforeEach(async () => {
+        c1 = await createRecord({
+          last_name: 'Doe',
+          first_name: 'John',
+        });
+
+        c2 = await createRecord({
+          last_name: 'Doe',
+          first_name: 'Jane',
+        });
+
+        c3 = await createRecord({
+          last_name: 'Doz',
+          first_name: 'Jane',
+        });
+      });
+      describe('by first name equals', () => {
+        beforeEach(async () => {
+          res = await request(app).get('/contacts?first_name[equals]=Jane');
+        });
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+          expect(res.body.items.map((i) => i.id).sort()).toEqual(
+            [c2.id, c3.id].sort()
+          );
+        });
+      });
+
+      describe('by last name equals', () => {
+        beforeEach(async () => {
+          res = await request(app).get('/contacts?last_name[equals]=Doe');
+        });
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+          expect(res.body.items.map((i) => i.id).sort()).toEqual(
+            [c2.id, c1.id].sort()
+          );
+        });
+      });
+
+      describe('by first name contains', () => {
+        beforeEach(async () => {
+          res = await request(app).get('/contacts?first_name[contains]=an');
+        });
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+          expect(res.body.items.map((i) => i.id).sort()).toEqual(
+            [c2.id, c3.id].sort()
+          );
+        });
+      });
+    });
+
+    describe('pagination', () => {
+      describe('with limit param', () => {
+        beforeEach(async () => {
+          await Promise.all([createRecord(), createRecord(), createRecord()]);
+          res = await request(app).get('/contacts?limit=2');
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+        });
+
+        it('should return the total number of items', async () => {
+          expect(res.body.total).toBe(3);
+        });
+      });
+
+      describe('with offset param', () => {
+        beforeEach(async () => {
+          await Promise.all([createRecord(), createRecord(), createRecord()]);
+          res = await request(app).get('/contacts?offset=2');
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body));
+          expect(res.body.items.length).toBe(1);
+        });
+      });
+
+      describe('with filters and sorting', () => {
+        let c2;
+        beforeEach(async () => {
+          await createRecord({
+            last_name: 'Doe',
+            first_name: 'John',
+          });
+          c2 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'Jane',
+          });
+          await createRecord({
+            last_name: 'Doz',
+            first_name: 'Jane',
+          });
+
+          res = await request(app).get(
+            '/contacts?last_name[equals]=Doe&sort_by=first_name.asc&limit=1'
+          );
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body));
+          expect(res.body.items.length).toBe(1);
+          expect(res.body.items[0].id).toBe(c2.id);
         });
       });
     });

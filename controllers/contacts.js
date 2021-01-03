@@ -15,12 +15,20 @@ module.exports.handlePost = async (req, res) => {
 };
 
 module.exports.getCollection = async (req, res) => {
-  const { limit = 10, offset = 0, sort_by = 'first_name.asc' } = req.query;
+  const {
+    limit = 10,
+    offset = 0,
+    sort_by = 'first_name.asc',
+    first_name,
+    last_name,
+  } = req.query;
   const orderBy = parseSortParams(sort_by);
+
   const [items, total] = await findMany({
     limit: parseInt(limit, 10),
     offset: parseInt(offset, 10),
     orderBy,
+    where: { first_name, last_name },
   });
   res.send({
     total,
