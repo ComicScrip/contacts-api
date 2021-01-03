@@ -1,5 +1,6 @@
 const Joi = require('joi');
-const { contacts } = require('../db').prisma;
+const db = require('../db');
+const { contacts } = db.prisma;
 const { RecordNotFoundError, ValidationError } = require('../error-types');
 
 const emailAlreadyExists = async (email) => {
@@ -25,7 +26,7 @@ const findOne = async (id, failIfNotFound = true) => {
   });
   if (contact) return contact;
   if (failIfNotFound) throw new RecordNotFoundError('contacts', id);
-  return false;
+  return null;
 };
 
 const validate = async (attributes, options = { udpatedRessourceId: null }) => {
@@ -72,11 +73,18 @@ const create = async (data) => {
   return contacts.create({ data });
 };
 
-const findMany = async ({ limit, offset, orderBy, where }) =>
-  Promise.all([
+const findMany = async ({ limit, offset, orderBy, where }) => {
+  /*
+  let sql = 'SELECT * from contacts';
+  let countSQL = 'SELECT COUNT(id) from contacts';
+  
+  return Promise.all([db.query(sql), db.query(countSQL)]);
+  */
+  return Promise.all([
     contacts.findMany({ take: limit, skip: offset, orderBy, where }),
     (await contacts.aggregate({ count: true })).count,
   ]);
+};
 
 const updateOne = async (id, data) => {
   /* await validate(newAttributes, { udpatedRessourceId: id });

@@ -29,7 +29,10 @@ describe(`contacts endpoints`, () => {
         expect(res.status).toBe(200);
       });
 
-      it('the returned body is an array containing two elements', async () => {
+      it('should return the total number of items', async () => {
+        expect(res.body.total).toBe(2);
+      });
+      it('should return items array containing elements', async () => {
         expect(Array.isArray(res.body.items)).toBe(true);
         expect(res.body.items.length).toBe(2);
       });
@@ -184,10 +187,6 @@ describe(`contacts endpoints`, () => {
         it('should return correct items', async () => {
           expect(Array.isArray(res.body.items)).toBe(true);
           expect(res.body.items.length).toBe(2);
-        });
-
-        it('should return the total number of items', async () => {
-          expect(res.body.total).toBe(3);
         });
       });
 
