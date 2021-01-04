@@ -74,55 +74,8 @@ const create = async (data) => {
   return contacts.create({ data });
 };
 
-const findMany = async ({ limit, offset, orderBy, where }) => {
-  /*
-  let sql = 'SELECT * from contacts';
-  let countSQL = 'SELECT COUNT(id) from contacts';
-  const whereDefined = Object.keys(where).filter(
-    (colName) => typeof where[colName] !== 'undefined'
-  );
-  if (whereDefined.length) {
-    const whereClause = ` WHERE ${whereDefined
-      .map((colName) => {
-        const operator = Object.keys(where[colName])[0];
-        const sqlOperator = {
-          not: '!=',
-          equals: '=',
-          contains: 'LIKE',
-        }[operator];
-        const value = where[colName][operator];
-        // would not work for number columns...
-        let clause = `${colName} ${sqlOperator} '${value}'`;
-        if (operator === 'contains') {
-          clause = `${colName} ${sqlOperator} '%${value}%'`;
-        }
-        return clause;
-      })
-      .join(', ')}`;
-    sql += whereClause;
-    countSQL += whereClause;
-  }
-
-  if (orderBy.length) {
-    sql += ` ORDER BY ${orderBy
-      .map((obj) => `${Object.keys(obj)[0]} ${obj[Object.keys(obj)[0]]}`)
-      .join(', ')}`;
-  }
-
-  if (typeof limit !== 'undefined' && typeof offset !== 'undefined') {
-    sql += ` LIMIT ${limit} OFFSET ${offset}`;
-  }
-
-  return Promise.all([
-    db.query(sql),
-    (await db.query(countSQL))[0]['COUNT(id)'],
-  ]);
-  */
-
-  return Promise.all([
-    contacts.findMany({ take: limit, skip: offset, orderBy, where }),
-    (await contacts.aggregate({ count: true })).count,
-  ]);
+const findMany = async () => {
+  return contacts.findMany();
 };
 
 const updateOne = async (id, data) => {
