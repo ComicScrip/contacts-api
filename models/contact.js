@@ -121,7 +121,7 @@ const findMany = async ({ limit, offset, orderBy, where }) => {
 
   return Promise.all([
     contacts.findMany({ take: limit, skip: offset, orderBy, where }),
-    (await contacts.aggregate({ count: true })).count,
+    (await contacts.aggregate({ where, count: true })).count,
   ]);
 };
 
