@@ -36,9 +36,10 @@ services:
       - DB_NAME=contact_api_database
       - DB_HOST=db
       - DB_PORT=3306
+      - DB_URL=mysql://root:root@db:3306/contact_api_database
     ports:
       - '5000:5000'
-    command: 'bash -c "npm run wait-for-db && npm run start:watch"'
+    command: 'bash -c "npm run wait-for-db && npm i && npx prisma generate && npm run start:watch"'
 
 volumes:
   contacts-db:

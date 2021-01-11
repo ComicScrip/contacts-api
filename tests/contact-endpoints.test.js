@@ -2,7 +2,6 @@ const request = require('supertest');
 const faker = require('faker');
 const app = require('../app.js');
 const Contact = require('../models/contact.js');
-const { API_KEY } = require('../env.js');
 
 const getValidAttributes = () => ({
   first_name: faker.name.firstName().substr(0, 20),
@@ -258,18 +257,9 @@ describe(`contacts endpoints`, () => {
     });
   });
   describe(`POST /contacts`, () => {
-    describe('whithout api key', () => {
-      beforeAll(async () => {
-        res = await request(app).post('/contacts').send(getValidAttributes());
-      });
-
-      it('returns 401 status', async () => {
-        expect(res.statusCode).toEqual(401);
-      });
-    });
     describe('whithout request body', () => {
       beforeAll(async () => {
-        res = await request(app).post(`/contacts?apiKey=${API_KEY}`);
+        res = await request(app).post(`/contacts`);
       });
 
       it('returns 400 status', async () => {
@@ -279,9 +269,7 @@ describe(`contacts endpoints`, () => {
     describe('when a valid payload is sent', () => {
       beforeAll(async () => {
         payload = getValidAttributes();
-        res = await request(app)
-          .post(`/contacts?apiKey=${API_KEY}`)
-          .send(payload);
+        res = await request(app).post(`/contacts`).send(payload);
       });
 
       it('returns 201 status', async () => {
@@ -295,9 +283,7 @@ describe(`contacts endpoints`, () => {
     describe('when a contact with the same email already exists in DB', () => {
       beforeAll(async () => {
         const validEntity = await createRecord();
-        res = await request(app)
-          .post(`/contacts?apiKey=${API_KEY}`)
-          .send(validEntity);
+        res = await request(app).post(`/contacts`).send(validEntity);
       });
 
       it('returns a 422 status', async () => {
@@ -317,7 +303,7 @@ describe(`contacts endpoints`, () => {
 
     describe('when email is not provided', () => {
       beforeAll(async () => {
-        res = await request(app).post(`/contacts?apiKey=${API_KEY}`).send({
+        res = await request(app).post(`/contacts`).send({
           first_name: 'Jane',
           last_name: 'Doe',
         });
@@ -334,7 +320,7 @@ describe(`contacts endpoints`, () => {
 
     describe('when first or last name exceed 30 caracters', () => {
       beforeAll(async () => {
-        res = await request(app).post(`/contacts?apiKey=${API_KEY}`).send({
+        res = await request(app).post(`/contacts`).send({
           first_name:
             'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
           last_name:
@@ -359,25 +345,10 @@ describe(`contacts endpoints`, () => {
     });
   });
   describe(`PUT /contacts/:id`, () => {
-    describe('without api key', () => {
-      beforeAll(async () => {
-        testedEntity = await createRecord();
-        res = await request(app).put(`/contacts/${testedEntity.id}`).send({
-          first_name: 'Jane',
-          last_name: 'Doe',
-        });
-      });
-
-      it('returns 401', () => {
-        expect(res.status).toBe(401);
-      });
-    });
     describe('whithout request body', () => {
       beforeAll(async () => {
         testedEntity = await createRecord();
-        res = await request(app).put(
-          `/contacts/${testedEntity.id}?apiKey=${API_KEY}`
-        );
+        res = await request(app).put(`/contacts/${testedEntity.id}`);
       });
 
       it('returns 400 status', async () => {
@@ -390,7 +361,7 @@ describe(`contacts endpoints`, () => {
         testedEntity = await createRecord();
         payload = { ...getValidAttributes(), email: other.email };
         res = await request(app)
-          .put(`/contacts/${testedEntity.id}?apiKey=${API_KEY}`)
+          .put(`/contacts/${testedEntity.id}`)
           .send(payload);
       });
 
@@ -413,7 +384,7 @@ describe(`contacts endpoints`, () => {
         testedEntity = await createRecord();
         payload = getValidAttributes();
         res = await request(app)
-          .put(`/contacts/${testedEntity.id}?apiKey=${API_KEY}`)
+          .put(`/contacts/${testedEntity.id}`)
           .send(payload);
       });
 
@@ -431,7 +402,7 @@ describe(`contacts endpoints`, () => {
     describe('with an non-existing entity id', () => {
       beforeAll(async () => {
         res = await request(app)
-          .put(`/contacts/99999999?apiKey=${API_KEY}`)
+          .put(`/contacts/99999999`)
           .send({ first_name: 'jane' });
       });
 
@@ -443,14 +414,12 @@ describe(`contacts endpoints`, () => {
     describe('when first or last name exceed 30 caracters', () => {
       beforeAll(async () => {
         testedEntity = await createRecord();
-        res = await request(app)
-          .put(`/contacts/${testedEntity.id}?apiKey=${API_KEY}`)
-          .send({
-            first_name:
-              'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
-            last_name:
-              'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
-          });
+        res = await request(app).put(`/contacts/${testedEntity.id}`).send({
+          first_name:
+            'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
+          last_name:
+            'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
+        });
       });
 
       it('returns a 422 status', async () => {
@@ -470,22 +439,10 @@ describe(`contacts endpoints`, () => {
     });
   });
   describe(`DELETE /contacts/:id`, () => {
-    describe('without api key', () => {
-      beforeAll(async () => {
-        const entity = await createRecord();
-        res = await request(app).delete(`/contacts/${entity.id}`);
-      });
-
-      it('returns 401', () => {
-        expect(res.status).toBe(401);
-      });
-    });
     describe('with a valid entity', () => {
       beforeAll(async () => {
         const contact = await createRecord();
-        res = await request(app).delete(
-          `/contacts/${contact.id}?apiKey=${API_KEY}`
-        );
+        res = await request(app).delete(`/contacts/${contact.id}`);
       });
 
       it('returns 204', () => {
@@ -494,7 +451,7 @@ describe(`contacts endpoints`, () => {
     });
     describe('with an non-existing entity id', () => {
       beforeAll(async () => {
-        res = await request(app).delete(`/contacts/99999999?apiKey=${API_KEY}`);
+        res = await request(app).delete(`/contacts/99999999`);
       });
 
       it('returns 404', () => {

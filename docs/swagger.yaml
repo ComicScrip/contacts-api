@@ -19,6 +19,39 @@ paths:
         - 'contact'
       summary: 'Get a list of contacts'
       description: ''
+      parameters:
+        - in: 'query'
+          name: 'limit'
+          description: 'The number of items per page'
+          type: 'string'
+          default: '10'
+        - in: 'query'
+          name: 'offset'
+          description: 'The number of items that should be skipped, typically offset = "number of items per page" * ("current page number" - 1)'
+          type: 'string'
+          default: '0'
+        - in: 'query'
+          name: 'first_name[equals]'
+          description: "first name equality filter"
+          type: 'string'
+        - in: 'query'
+          name: 'first_name[contains]'
+          description: "first name contains filter"
+          type: 'string'
+        - in: 'query'
+          name: 'last_name[equals]'
+          description: "last name equality filter"
+          type: 'string'
+        - in: 'query'
+          name: 'last_name[contains]'
+          description: "last name contains filter"
+          type: 'string'
+        - in: 'query'
+          name: 'sort_by'
+          description: "field to sort items by (add .desc suffix to reverse the order and separate fields by a comma for multi-field ordering)"
+          type: 'string'
+          default: 'last_name.desc,first_name.asc'
+          
       responses:
         '200':
           description: 'Everything went well'
@@ -32,11 +65,6 @@ paths:
       summary: 'Add a new contact'
       description: ''
       parameters:
-        - name: 'apiKey'
-          in: 'query'
-          description: 'The key needed to access some parts of the API'
-          required: true
-          type: 'string'
         - in: 'body'
           name: 'contact'
           description: 'Contact object that needs to be added in DB'
@@ -66,8 +94,6 @@ paths:
           schema:
             type: 'object'
             $ref: "#/definitions/ValidationError"
-        '401':
-          description: 'Unauthorized'
 
   /contacts/{contactId}:
     get:
@@ -97,11 +123,6 @@ paths:
       summary: 'Update an existing contact'
       description: ''
       parameters:
-        - name: 'apiKey'
-          in: 'query'
-          description: 'The key needed to access some parts of the API'
-          required: true
-          type: 'string'
         - name: 'contactId'
           in: 'path'
           description: 'ID of contact to return'
@@ -142,11 +163,6 @@ paths:
       summary: 'Deletes a contact'
       description: ''
       parameters:
-        - name: 'apiKey'
-          in: 'query'
-          description: 'The key needed to access some parts of the API'
-          required: true
-          type: 'string'
         - name: 'contactId'
           in: 'path'
           description: 'contact id to delete'

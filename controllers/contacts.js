@@ -18,7 +18,7 @@ module.exports.getCollection = async (req, res) => {
   const {
     limit = 10,
     offset = 0,
-    sort_by = 'first_name.asc',
+    sort_by = 'last_name.desc,first_name.asc',
     first_name,
     last_name,
   } = req.query;
