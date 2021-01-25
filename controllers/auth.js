@@ -1,20 +1,21 @@
+const passport = require('passport');
 const { SESSION_COOKIE_NAME, SESSION_COOKIE_DOMAIN } = require('../env');
-const User = require('../models/user');
 
-module.exports.login = async (req, res) => {
-  const user = await User.findByEmail(req.body.email);
-  if (user && (await User.verifyPassword(user, req.body.password))) {
-    if (req.body.stayConnected) {
-      // session cookie will be valid for a week
-      req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000;
-    }
-    req.session.userId = user.id;
-    req.session.save(() => {
-      res.sendStatus(200);
-    });
-  } else {
-    res.status(401).send('Invalid Credentials');
-  }
+module.exports.login = async (req, res, next) => {
+  passport.authenticate('local', (err, user) => {
+    if (err) res.status(500).send('internal error');
+    else
+      req.login(user, (loginErr) => {
+        if (loginErr) {
+          return res.status(401).send('Invalid Credentials');
+        }
+        if (req.body.stayConnected) {
+          // session cookie will be valid for a week
+          req.session.cookie.maxAge = 7 * 24 * 60 * 60 * 1000;
+        }
+        return res.send('You were authenticated & logged in!\n');
+      });
+  })(req, res, next);
 };
 
 module.exports.logout = async (req, res) => {

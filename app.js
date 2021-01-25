@@ -3,6 +3,9 @@ const swaggerUi = require('swagger-ui-express');
 const YAML = require('yamljs');
 const cors = require('cors');
 const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const User = require('./models/user');
 const {
   inTestEnv,
   inProdEnv,
@@ -21,6 +24,36 @@ const handleUnauthorizedError = require('./middlewares/handleUnauthorizedError')
 const app = express();
 app.set('x-powered-by', false);
 app.set('trust proxy', 1);
+
+// configure passport.js to use the local strategy
+passport.use(
+  new LocalStrategy(
+    { usernameField: 'email' },
+    async (email, password, done) => {
+      const user = await User.findByEmail(email);
+      if (user && (await User.verifyPassword(user, password))) {
+        console.log('Local strategy returned true');
+        return done(null, user);
+      }
+      return done(null, false);
+    }
+  )
+);
+
+// tell passport how to serialize the user
+passport.serializeUser((user, done) => {
+  console.log(
+    'Inside serializeUser callback. User id is save to the session file store here'
+  );
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  console.log('Inside deserializeUser callback');
+  console.log(`The user id passport saved in the session file store is: ${id}`);
+  const user = await User.findOne(id);
+  done(null, user);
+});
 
 // docs
 if (!inTestEnv && !inProdEnv) {
@@ -59,6 +92,9 @@ app.use(
     },
   })
 );
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 // routes
 require('./routes')(app);
