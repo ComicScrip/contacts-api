@@ -1,3 +1,4 @@
+const parseSortParams = require('../helpers/parseSortParams.js');
 const {
   create,
   findMany,
@@ -14,14 +15,29 @@ module.exports.handlePost = async (req, res) => {
 };
 
 module.exports.getCollection = async (req, res) => {
-  const rawData = await findMany();
-  res.send(
-    rawData.map((c) => ({
+  const {
+    limit = 10,
+    offset = 0,
+    sort_by = 'last_name.desc,first_name.asc',
+    first_name,
+    last_name,
+  } = req.query;
+  const orderBy = parseSortParams(sort_by);
+
+  const [items, total] = await findMany({
+    limit: parseInt(limit, 10),
+    offset: parseInt(offset, 10),
+    orderBy,
+    where: { first_name, last_name },
+  });
+  res.send({
+    total,
+    items: items.map((c) => ({
       id: c.id,
       name: getFullName(c),
       email: c.email,
-    }))
-  );
+    })),
+  });
 };
 
 module.exports.findOne = async (req, res) => {

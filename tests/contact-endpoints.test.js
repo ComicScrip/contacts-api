@@ -2,7 +2,6 @@ const request = require('supertest');
 const faker = require('faker');
 const app = require('../app.js');
 const Contact = require('../models/contact.js');
-const { API_KEY } = require('../env.js');
 
 const getValidAttributes = () => ({
   first_name: faker.name.firstName().substr(0, 20),
@@ -10,8 +9,8 @@ const getValidAttributes = () => ({
   email: faker.unique(faker.internet.email),
 });
 
-const createRecord = (attributes) =>
-  Contact.create(attributes || getValidAttributes());
+const createRecord = (attributes = {}) =>
+  Contact.create({ ...getValidAttributes(), ...attributes });
 
 let res;
 let testedEntity;
@@ -19,7 +18,7 @@ let payload;
 
 describe(`contacts endpoints`, () => {
   describe(`GET /contacts`, () => {
-    describe('when there are two items in DB', () => {
+    describe('basic listing', () => {
       beforeEach(async () => {
         await Promise.all([createRecord(), createRecord()]);
         res = await request(app).get('/contacts');
@@ -29,17 +28,204 @@ describe(`contacts endpoints`, () => {
         expect(res.status).toBe(200);
       });
 
-      it('the returned body is an array containing two elements', async () => {
-        expect(Array.isArray(res.body));
-        expect(res.body.length).toBe(2);
+      it('should return the total number of items', async () => {
+        expect(res.body.total).toBe(2);
+      });
+      it('should return items array containing elements', async () => {
+        expect(Array.isArray(res.body.items)).toBe(true);
+        expect(res.body.items.length).toBe(2);
       });
 
       it('the returned elements have expected properties', async () => {
         const expectedProps = ['id', 'name', 'email'];
-        res.body.forEach((element) => {
+        res.body.items.forEach((element) => {
           expectedProps.forEach((prop) => {
             expect(element[prop]).not.toBe(undefined);
           });
+        });
+      });
+    });
+
+    describe('sorting', () => {
+      describe('firstName asc then lastName desc', () => {
+        let c1;
+        let c2;
+        let c3;
+        beforeEach(async () => {
+          c1 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'John',
+          });
+
+          c2 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'Jane',
+          });
+
+          c3 = await createRecord({
+            last_name: 'Doz',
+            first_name: 'Jane',
+          });
+
+          res = await request(app).get(
+            '/contacts?sort_by=first_name.asc,last_name.desc'
+          );
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(3);
+          expect(res.body.items[0].id).toBe(c3.id);
+          expect(res.body.items[1].id).toBe(c2.id);
+          expect(res.body.items[2].id).toBe(c1.id);
+        });
+      });
+
+      describe('lastName asc then firstName desc', () => {
+        let c1;
+        let c2;
+        let c3;
+        beforeEach(async () => {
+          c1 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'John',
+          });
+
+          c2 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'Jane',
+          });
+
+          c3 = await createRecord({
+            last_name: 'Doz',
+            first_name: 'Jane',
+          });
+
+          res = await request(app).get(
+            '/contacts?sort_by=last_name.asc,first_name.desc'
+          );
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(3);
+          expect(res.body.items[0].id).toBe(c1.id);
+          expect(res.body.items[1].id).toBe(c2.id);
+          expect(res.body.items[2].id).toBe(c3.id);
+        });
+      });
+    });
+
+    describe('filtering', () => {
+      let c1;
+      let c2;
+      let c3;
+      beforeEach(async () => {
+        c1 = await createRecord({
+          last_name: 'Doe',
+          first_name: 'John',
+        });
+
+        c2 = await createRecord({
+          last_name: 'Doe',
+          first_name: 'Jane',
+        });
+
+        c3 = await createRecord({
+          last_name: 'Doz',
+          first_name: 'Jane',
+        });
+      });
+      describe('by first name equals', () => {
+        beforeEach(async () => {
+          res = await request(app).get('/contacts?first_name[equals]=Jane');
+        });
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+          expect(res.body.items.map((i) => i.id).sort()).toEqual(
+            [c2.id, c3.id].sort()
+          );
+        });
+      });
+
+      describe('by last name equals', () => {
+        beforeEach(async () => {
+          res = await request(app).get('/contacts?last_name[equals]=Doe');
+        });
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+          expect(res.body.items.map((i) => i.id).sort()).toEqual(
+            [c2.id, c1.id].sort()
+          );
+        });
+      });
+
+      describe('by first name contains', () => {
+        beforeEach(async () => {
+          res = await request(app).get('/contacts?first_name[contains]=an');
+        });
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+          expect(res.body.items.map((i) => i.id).sort()).toEqual(
+            [c2.id, c3.id].sort()
+          );
+        });
+      });
+    });
+
+    describe('pagination', () => {
+      describe('with limit param', () => {
+        beforeEach(async () => {
+          await Promise.all([createRecord(), createRecord(), createRecord()]);
+          res = await request(app).get('/contacts?limit=2');
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body.items)).toBe(true);
+          expect(res.body.items.length).toBe(2);
+        });
+      });
+
+      describe('with offset param', () => {
+        beforeEach(async () => {
+          await Promise.all([createRecord(), createRecord(), createRecord()]);
+          res = await request(app).get('/contacts?offset=2');
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body));
+          expect(res.body.items.length).toBe(1);
+        });
+      });
+
+      describe('with filters and sorting', () => {
+        let c2;
+        beforeEach(async () => {
+          await createRecord({
+            last_name: 'Doe',
+            first_name: 'John',
+          });
+          c2 = await createRecord({
+            last_name: 'Doe',
+            first_name: 'Jane',
+          });
+          await createRecord({
+            last_name: 'Doz',
+            first_name: 'Jane',
+          });
+
+          res = await request(app).get(
+            '/contacts?last_name[equals]=Doe&sort_by=first_name.asc&limit=1'
+          );
+        });
+
+        it('should return correct items', async () => {
+          expect(Array.isArray(res.body));
+          expect(res.body.items.length).toBe(1);
+          expect(res.body.items[0].id).toBe(c2.id);
         });
       });
     });
@@ -71,18 +257,9 @@ describe(`contacts endpoints`, () => {
     });
   });
   describe(`POST /contacts`, () => {
-    describe('whithout api key', () => {
-      beforeAll(async () => {
-        res = await request(app).post('/contacts').send(getValidAttributes());
-      });
-
-      it('returns 401 status', async () => {
-        expect(res.statusCode).toEqual(401);
-      });
-    });
     describe('whithout request body', () => {
       beforeAll(async () => {
-        res = await request(app).post(`/contacts?apiKey=${API_KEY}`);
+        res = await request(app).post(`/contacts`);
       });
 
       it('returns 400 status', async () => {
@@ -92,9 +269,7 @@ describe(`contacts endpoints`, () => {
     describe('when a valid payload is sent', () => {
       beforeAll(async () => {
         payload = getValidAttributes();
-        res = await request(app)
-          .post(`/contacts?apiKey=${API_KEY}`)
-          .send(payload);
+        res = await request(app).post(`/contacts`).send(payload);
       });
 
       it('returns 201 status', async () => {
@@ -108,9 +283,7 @@ describe(`contacts endpoints`, () => {
     describe('when a contact with the same email already exists in DB', () => {
       beforeAll(async () => {
         const validEntity = await createRecord();
-        res = await request(app)
-          .post(`/contacts?apiKey=${API_KEY}`)
-          .send(validEntity);
+        res = await request(app).post(`/contacts`).send(validEntity);
       });
 
       it('returns a 422 status', async () => {
@@ -130,7 +303,7 @@ describe(`contacts endpoints`, () => {
 
     describe('when email is not provided', () => {
       beforeAll(async () => {
-        res = await request(app).post(`/contacts?apiKey=${API_KEY}`).send({
+        res = await request(app).post(`/contacts`).send({
           first_name: 'Jane',
           last_name: 'Doe',
         });
@@ -147,7 +320,7 @@ describe(`contacts endpoints`, () => {
 
     describe('when first or last name exceed 30 caracters', () => {
       beforeAll(async () => {
-        res = await request(app).post(`/contacts?apiKey=${API_KEY}`).send({
+        res = await request(app).post(`/contacts`).send({
           first_name:
             'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
           last_name:
@@ -172,25 +345,10 @@ describe(`contacts endpoints`, () => {
     });
   });
   describe(`PUT /contacts/:id`, () => {
-    describe('without api key', () => {
-      beforeAll(async () => {
-        testedEntity = await createRecord();
-        res = await request(app).put(`/contacts/${testedEntity.id}`).send({
-          first_name: 'Jane',
-          last_name: 'Doe',
-        });
-      });
-
-      it('returns 401', () => {
-        expect(res.status).toBe(401);
-      });
-    });
     describe('whithout request body', () => {
       beforeAll(async () => {
         testedEntity = await createRecord();
-        res = await request(app).put(
-          `/contacts/${testedEntity.id}?apiKey=${API_KEY}`
-        );
+        res = await request(app).put(`/contacts/${testedEntity.id}`);
       });
 
       it('returns 400 status', async () => {
@@ -203,7 +361,7 @@ describe(`contacts endpoints`, () => {
         testedEntity = await createRecord();
         payload = { ...getValidAttributes(), email: other.email };
         res = await request(app)
-          .put(`/contacts/${testedEntity.id}?apiKey=${API_KEY}`)
+          .put(`/contacts/${testedEntity.id}`)
           .send(payload);
       });
 
@@ -226,7 +384,7 @@ describe(`contacts endpoints`, () => {
         testedEntity = await createRecord();
         payload = getValidAttributes();
         res = await request(app)
-          .put(`/contacts/${testedEntity.id}?apiKey=${API_KEY}`)
+          .put(`/contacts/${testedEntity.id}`)
           .send(payload);
       });
 
@@ -244,7 +402,7 @@ describe(`contacts endpoints`, () => {
     describe('with an non-existing entity id', () => {
       beforeAll(async () => {
         res = await request(app)
-          .put(`/contacts/99999999?apiKey=${API_KEY}`)
+          .put(`/contacts/99999999`)
           .send({ first_name: 'jane' });
       });
 
@@ -256,14 +414,12 @@ describe(`contacts endpoints`, () => {
     describe('when first or last name exceed 30 caracters', () => {
       beforeAll(async () => {
         testedEntity = await createRecord();
-        res = await request(app)
-          .put(`/contacts/${testedEntity.id}?apiKey=${API_KEY}`)
-          .send({
-            first_name:
-              'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
-            last_name:
-              'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
-          });
+        res = await request(app).put(`/contacts/${testedEntity.id}`).send({
+          first_name:
+            'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
+          last_name:
+            'Janeiuzyegfuyezgfuyzfgzuyegfzeuyfguzyegfuyzgfuyzegfuzgefugyzeufygzeuyguygf',
+        });
       });
 
       it('returns a 422 status', async () => {
@@ -283,22 +439,10 @@ describe(`contacts endpoints`, () => {
     });
   });
   describe(`DELETE /contacts/:id`, () => {
-    describe('without api key', () => {
-      beforeAll(async () => {
-        const entity = await createRecord();
-        res = await request(app).delete(`/contacts/${entity.id}`);
-      });
-
-      it('returns 401', () => {
-        expect(res.status).toBe(401);
-      });
-    });
     describe('with a valid entity', () => {
       beforeAll(async () => {
         const contact = await createRecord();
-        res = await request(app).delete(
-          `/contacts/${contact.id}?apiKey=${API_KEY}`
-        );
+        res = await request(app).delete(`/contacts/${contact.id}`);
       });
 
       it('returns 204', () => {
@@ -307,7 +451,7 @@ describe(`contacts endpoints`, () => {
     });
     describe('with an non-existing entity id', () => {
       beforeAll(async () => {
-        res = await request(app).delete(`/contacts/99999999?apiKey=${API_KEY}`);
+        res = await request(app).delete(`/contacts/99999999`);
       });
 
       it('returns 404', () => {
