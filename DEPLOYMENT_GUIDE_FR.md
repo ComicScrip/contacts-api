@@ -118,3 +118,22 @@ Si l'API doit servir des fichiers uploadés par les utilisateurs sur le système
   - Au niveau de l'interface FileBrowser, en haut à droite cliquer sur le bouton upload (flèche haut)
   - Sélectionner tous les fichiers que vous souhaitez mettre à dispotion
 
+### STEP 5 : créer le front-office
+  - Caprover > Apps > entrer "front-office" dans l'input, cliquer sur le bouton "Create New App"
+  - aller sur l'app "front-office"
+  - onglet http settings : cliquer sur "Enable HTTPS", dans l'input "Container HTTP Port" mettre 80,  cocher "Force HTTPS by redirecting all HTTP traffic to HTTPS", cliquer sur "Save & Update"
+  - onglet http settings : à coté du bouton "connect new domain", remplir l'input avec [NOM DE DOMAINE] et cliquer sur le bouton puis sur "enable HTTPS".
+  - onglet App Configs, Environmental Variables: cocher "bulk edit" et copier : REACT_APP_API_URL=https://<span>api.[NOM DE DOMAINE]</span>
+  - "Save & Update"
+  - onglet "Deployement"
+  - aller à la section Method 3: Deploy from Github/Bitbucket/Gitlab
+  - Repository : https://github.com/fl-lyonnais-dev/fl-lyonnais-front-office
+  - Branch : main
+  - Username : [GH_USER]
+  - Password : [GH_PASSWORD]
+  - "Save & Update"
+  - copier la valeur du champs apparu dans "Method 3: Deploy from Github/Bitbucket/Gitlab"
+  - aller sur https://github.com/fl-lyonnais-dev/fl-lyonnais-front-office/settings/hooks
+  - cliquer sur "add webhook"
+  - coller la valeur de l'input copiée précédement dans le champs Payload URL de github, cliquer sur le bouton vert "Add webhook". 
+
