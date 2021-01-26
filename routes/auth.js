@@ -12,4 +12,7 @@ router.get(
   asyncHandler(authController.facebookAuthCallback)
 );
 
+router.get('/google', asyncHandler(authController.googleAuth));
+router.get('/google/callback', asyncHandler(authController.googleAuthCallback));
+
 module.exports = router;

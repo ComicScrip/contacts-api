@@ -1,5 +1,9 @@
 const passport = require('passport');
-const { SESSION_COOKIE_NAME, SESSION_COOKIE_DOMAIN } = require('../env');
+const {
+  SESSION_COOKIE_NAME,
+  SESSION_COOKIE_DOMAIN,
+  AUTH_SUCCESS_REDIRECT_URL,
+} = require('../env');
 
 module.exports.login = async (req, res, next) => {
   passport.authenticate('local', (err, user) => {
@@ -32,7 +36,23 @@ module.exports.facebookAuth = async (req, res, next) => {
 
 module.exports.facebookAuthCallback = async (req, res, next) => {
   passport.authenticate('facebook', {
-    successRedirect: 'http://localhost:3000/profile',
+    successRedirect: AUTH_SUCCESS_REDIRECT_URL,
     failureRedirect: '/auth/facebook',
+  })(req, res, next);
+};
+
+module.exports.googleAuth = async (req, res, next) => {
+  passport.authenticate('google', {
+    scope: [
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ],
+  })(req, res, next);
+};
+
+module.exports.googleAuthCallback = async (req, res, next) => {
+  passport.authenticate('google', {
+    successRedirect: AUTH_SUCCESS_REDIRECT_URL,
+    failureRedirect: '/auth/google',
   })(req, res, next);
 };

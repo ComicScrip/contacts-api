@@ -1,11 +1,15 @@
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const FacebookStrategy = require('passport-facebook').Strategy;
+const GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
+
 const User = require('../models/user');
 const {
   FACEBOOK_CLIENT_SECRET,
   FACEBOOK_CLIENT_ID,
   API_BASE_URL,
+  GOOGLE_CLIENT_ID,
+  GOOGLE_CLIENT_SECRET,
 } = require('../env');
 
 module.exports = (app) => {
@@ -37,13 +41,15 @@ module.exports = (app) => {
             false
           );
           if (existingUser) done(null, existingUser);
-          else
-            await User.create({
+          else {
+            const user = await User.create({
               email: profile._json.email, // eslint-disable-line
               first_name: profile._json.first_name, // eslint-disable-line
               last_name: profile._json.last_name, // eslint-disable-line
               facebook_id: profile._json.id, // eslint-disable-line
             });
+            done(null, user);
+          }
         } catch (err) {
           done(err);
         }
@@ -52,27 +58,25 @@ module.exports = (app) => {
   );
 
   passport.use(
-    new FacebookStrategy(
+    new GoogleStrategy(
       {
-        clientID: FACEBOOK_CLIENT_ID,
-        clientSecret: FACEBOOK_CLIENT_SECRET,
-        callbackURL: `${API_BASE_URL}/auth/facebook/callback`,
-        profileFields: ['name', 'email'],
+        clientID: GOOGLE_CLIENT_ID,
+        clientSecret: GOOGLE_CLIENT_SECRET,
+        callbackURL: `${API_BASE_URL}/auth/google/callback`,
       },
       async (accessToken, refreshToken, profile, done) => {
         try {
-          const existingUser = await User.findByFacebookId(
-            profile._json.id, // eslint-disable-line
-            false
-          );
+          const existingUser = await User.findByGoogleId(profile.id, false);
           if (existingUser) done(null, existingUser);
-          else
-            await User.create({
+          else {
+            const user = await User.create({
               email: profile._json.email, // eslint-disable-line
-              first_name: profile._json.first_name, // eslint-disable-line
-              last_name: profile._json.last_name, // eslint-disable-line
-              facebook_id: profile._json.id, // eslint-disable-line
+              first_name: profile._json.given_name, // eslint-disable-line
+              last_name: profile._json.family_name, // eslint-disable-line
+              google_id: profile.id, // eslint-disable-line
             });
+            done(null, user);
+          }
         } catch (err) {
           done(err);
         }

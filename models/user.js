@@ -42,6 +42,15 @@ const findByFacebookId = async (id, failIfNotFound = true) => {
   return null;
 };
 
+const findByGoogleId = async (id, failIfNotFound = true) => {
+  const rows = await db.query(`SELECT * FROM users WHERE google_id = ?`, [id]);
+  if (rows.length) {
+    return rows[0];
+  }
+  if (failIfNotFound) throw new RecordNotFoundError();
+  return null;
+};
+
 const validate = async (attributes, options = { udpatedRessourceId: null }) => {
   const { udpatedRessourceId } = options;
   const forUpdate = !!udpatedRessourceId;
@@ -140,4 +149,5 @@ module.exports = {
   findByEmail,
   verifyPassword,
   findByFacebookId,
+  findByGoogleId,
 };
