@@ -31,14 +31,32 @@ const findByEmail = async (email, failIfNotFound = true) => {
   return null;
 };
 
+const findByFacebookId = async (id, failIfNotFound = true) => {
+  const rows = await db.query(`SELECT * FROM users WHERE facebook_id = ?`, [
+    id,
+  ]);
+  if (rows.length) {
+    return rows[0];
+  }
+  if (failIfNotFound) throw new RecordNotFoundError();
+  return null;
+};
+
+const findByGoogleId = async (id, failIfNotFound = true) => {
+  const rows = await db.query(`SELECT * FROM users WHERE google_id = ?`, [id]);
+  if (rows.length) {
+    return rows[0];
+  }
+  if (failIfNotFound) throw new RecordNotFoundError();
+  return null;
+};
+
 const validate = async (attributes, options = { udpatedRessourceId: null }) => {
   const { udpatedRessourceId } = options;
   const forUpdate = !!udpatedRessourceId;
   const schema = Joi.object().keys({
     email: forUpdate ? Joi.string().email() : Joi.string().email().required(),
-    password: forUpdate
-      ? Joi.string().min(8).max(30)
-      : Joi.string().min(8).max(30).required(),
+    password: Joi.string().min(8).max(30),
     password_confirmation: Joi.when('password', {
       is: Joi.string().min(8).max(30).required(),
       then: Joi.any()
@@ -46,6 +64,12 @@ const validate = async (attributes, options = { udpatedRessourceId: null }) => {
         .required()
         .messages({ 'any.only': 'password_confirmation does not match' }),
     }),
+    facebook_id: Joi.string(),
+    google_id: Joi.string(),
+    reset_password_token: Joi.string(),
+    reset_password_token_expires: Joi.string(),
+    first_name: Joi.string(),
+    last_name: Joi.string(),
   });
 
   const { error } = schema.validate(attributes, {
@@ -74,7 +98,7 @@ const validate = async (attributes, options = { udpatedRessourceId: null }) => {
 const create = async (newAttributes) => {
   await validate(newAttributes);
   const { password, password_confirmation, ...otherAttributes } = newAttributes;
-  const encrypted_password = await argon2.hash(password);
+  const encrypted_password = await argon2.hash(password || '');
   const attriutesToSave = { ...otherAttributes, encrypted_password };
   return db
     .query(
@@ -124,4 +148,6 @@ module.exports = {
   removeOne,
   findByEmail,
   verifyPassword,
+  findByFacebookId,
+  findByGoogleId,
 };
