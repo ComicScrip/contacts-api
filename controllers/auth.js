@@ -25,3 +25,14 @@ module.exports.logout = async (req, res) => {
     return res.status(200).send('session deleted');
   });
 };
+
+module.exports.facebookAuth = async (req, res, next) => {
+  passport.authenticate('facebook', { scope: ['email'] })(req, res, next);
+};
+
+module.exports.facebookAuthCallback = async (req, res, next) => {
+  passport.authenticate('facebook', {
+    successRedirect: 'http://localhost:3000/profile',
+    failureRedirect: '/auth/facebook',
+  })(req, res, next);
+};

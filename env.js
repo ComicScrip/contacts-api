@@ -14,12 +14,16 @@ const inDevEnv = getEnv('NODE_ENV') === 'dev';
 const inTestEnv = getEnv('NODE_ENV') === 'test';
 
 const API_KEY = getEnv(`API_KEY`);
+const API_BASE_URL = getEnv(`API_BASE_URL`);
+const FACEBOOK_CLIENT_ID = getEnv(`FACEBOOK_CLIENT_ID`);
+const FACEBOOK_CLIENT_SECRET = getEnv(`FACEBOOK_CLIENT_SECRET`);
+const AUTH_SUCCESS_REDIRECT_URL = getEnv(`AUTH_SUCCESS_REDIRECT_URL`);
 const SESSION_COOKIE_DOMAIN = getEnv(`SESSION_COOKIE_DOMAIN`);
 const SESSION_COOKIE_NAME = getEnv(`SESSION_COOKIE_NAME`);
 const SESSION_COOKIE_SECRET = getEnv(`SESSION_COOKIE_SECRET`);
 const CORS_ALLOWED_ORINGINS = getEnv(`CORS_ALLOWED_ORINGINS`);
-const SERVER_PORT = getEnv(`SERVER_PORT${inTestEnv ? '_TEST' : ''}`);
 
+const SERVER_PORT = getEnv(`SERVER_PORT${inTestEnv ? '_TEST' : ''}`);
 const DB_HOST = getEnv(`DB_HOST${inTestEnv ? '_TEST' : ''}`);
 const DB_PORT = getEnv(`DB_PORT${inTestEnv ? '_TEST' : ''}`);
 const DB_USER = getEnv(`DB_USER${inTestEnv ? '_TEST' : ''}`);
@@ -42,4 +46,8 @@ module.exports = {
   CORS_ALLOWED_ORINGINS,
   SESSION_COOKIE_NAME,
   SESSION_COOKIE_DOMAIN,
+  FACEBOOK_CLIENT_ID,
+  FACEBOOK_CLIENT_SECRET,
+  AUTH_SUCCESS_REDIRECT_URL,
+  API_BASE_URL,
 };
